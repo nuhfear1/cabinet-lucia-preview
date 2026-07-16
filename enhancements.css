@@ -1,0 +1,9 @@
+/* Progressive enhancements: the existing site remains fully usable without this file. */
+.top-ticker{position:sticky;top:0;z-index:70;height:32px;overflow:hidden;background:var(--navy2);color:#dff2ec;border-bottom:1px solid rgba(255,255,255,.1);font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.top-ticker-track{display:flex;width:max-content;min-width:200%;height:100%;align-items:center;animation:ticker-scroll 28s linear infinite;will-change:transform}
+.top-ticker-group{display:flex;align-items:center;flex-shrink:0}
+.top-ticker-item{display:inline-flex;align-items:center;gap:12px;padding:0 24px}
+.top-ticker-item::after{content:"♥";color:var(--coral);font-size:.82rem}
+.top-ticker:hover .top-ticker-track{animation-play-state:paused}
+body.has-ticker header{top:32px}
+@keyframes ticker-scroll{from{transform:translateX(0)}
