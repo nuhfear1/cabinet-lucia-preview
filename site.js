@@ -1,5 +1,18 @@
-document.getElementById('site-header')?.insertAdjacentHTML('beforeend',`<header><div class="container nav"><a class="brand" href="index.html"><span class="brandmark">♥</span><span><strong>Dr Lucia Cespedes-Ocampo</strong><small>Cabinet de cardiologie</small></span></a><button class="mobile-toggle" aria-label="Ouvrir le menu" aria-expanded="false">☰</button><nav class="links" aria-label="Navigation principale"><a data-nav="home" href="index.html">Accueil</a><a data-nav="doctor" href="docteure.html">La docteure</a><a data-nav="consultations" href="consultations.html">Consultations</a><a data-nav="prevention" href="prevention.html">Prévention</a><a data-nav="locations" href="cabinets.html">Les cabinets</a></nav><a class="button coral" href="rendez-vous.html">Prendre rendez-vous</a></div></header>`);
+(() => {
+  const main = document.querySelector('main');
+  if (main && !main.id) main.id = 'main-content';
 
-document.getElementById('site-footer')?.insertAdjacentHTML('beforeend',`<footer><div class="container"><div class="footer-grid"><div><h3>Dr Lucia Cespedes-Ocampo</h3><p>Cabinet de cardiologie en Guadeloupe. Site de prévisualisation en cours de validation.</p></div><div><strong>Navigation</strong><p><a href="consultations.html">Consultations</a><br><a href="cabinets.html">Les cabinets</a><br><a href="rendez-vous.html">Rendez-vous</a></p></div><div><strong>Informations</strong><p><a href="mentions-legales.html">Mentions légales</a><br><a href="confidentialite.html">Confidentialité</a><br><a href="accessibilite.html">Accessibilité</a></p></div></div><div class="copyright">Prévisualisation — les informations non confirmées ne doivent pas être utilisées comme informations médicales ou administratives définitives.</div></div></footer>`);
+  if (!document.querySelector('.skip-link')) {
+    document.body.insertAdjacentHTML(
+      'afterbegin',
+      '<a class="skip-link" href="#main-content">Aller au contenu principal</a>'
+    );
+  }
 
-document.body.insertAdjacentHTML('beforeend',`<div class="assistant" id="assistant"><div class="assistant-head"><h3>Assistant pratique</h3><button type="button" id="close-assistant" aria-label="Fermer l’assistant">✕</button></div><p>Je peux vous aider uniquement pour le rendez-vous et les informations déjà présentes sur le site.</p><div class="notice">En cas d’urgence médicale, contactez immédiatement les services d’urgence. L’assistant ne donne aucun avis médical.</div><div class="assistant-options"><a href="rendez-vous.html">Prendre rendez-vous</a><a href="cabinets.html">Accès & GPS</a><a href="prevention.html">Préparer ma venue</a></div></div><button class="assistant-btn" id="assistant-btn">♥ Besoin d’aide ?</button>`);
+  const headerTarget = document.getElementById('site-header');
+  if (headerTarget) {
+    headerTarget.innerHTML = `
+      <header class="site-header">
+        <div class="container nav">
+          <a class="brand" href="index.html" aria-label="Accueil — Cabinet de cardiologie de la Docteure Lucia Cespedes-Ocampo">
+            <span class="brand
