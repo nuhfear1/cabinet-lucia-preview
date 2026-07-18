@@ -1,4 +1,11 @@
 (() => {
+  window.CABINET_LUCIA_BACKEND = Object.freeze({
+    enabled: false,
+    baseUrl: '',
+    timeoutMs: 8000,
+    environment: 'preview'
+  });
+
   if (!document.querySelector('link[data-ui-styles]')) {
     const uiStyles = document.createElement('link');
     uiStyles.rel = 'stylesheet';
