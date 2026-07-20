@@ -1,11 +1,15 @@
 (() => {
-  if (!document.querySelector('link[data-ui-styles]')) {
-    const uiStyles = document.createElement('link');
-    uiStyles.rel = 'stylesheet';
-    uiStyles.href = 'ui.css?v=20260717b';
-    uiStyles.dataset.uiStyles = 'true';
-    document.head.appendChild(uiStyles);
-  }
+  const ensureStyle = (href, dataAttribute) => {
+    if (document.querySelector(`link[${dataAttribute}]`)) return;
+    const stylesheet = document.createElement('link');
+    stylesheet.rel = 'stylesheet';
+    stylesheet.href = href;
+    stylesheet.setAttribute(dataAttribute, 'true');
+    document.head.appendChild(stylesheet);
+  };
+
+  ensureStyle('ui.css?v=20260720-premium', 'data-ui-styles');
+  ensureStyle('premium.css?v=20260720-premium', 'data-premium-styles');
 
   const main = document.querySelector('main');
   if (main && !main.id) main.id = 'main-content';
