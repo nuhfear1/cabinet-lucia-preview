@@ -1,0 +1,47 @@
+/* Focused fixes: permanent navigation, hero glass treatment and long consultation labels */
+#site-header{
+  position:fixed;
+  top:0;
+  right:0;
+  left:0;
+  z-index:110;
+  height:82px;
+}
+
+#site-header .site-header{
+  position:relative;
+  top:auto;
+  width:100%;
+}
+
+body:not([data-page="home"]) main{
+  padding-top:82px;
+}
+
+body[data-page="home"] .hero{
+  padding-top:154px!important;
+}
+
+/* Selected senior-design treatment: dark transparent glass over the hero,
+   changing to a high-contrast light glass surface once the page scrolls. */
+body[data-page="home"] .site-header:not(.is-scrolled){
+  background:linear-gradient(180deg,rgba(4,31,38,.56),rgba(4,31,38,.28))!important;
+  border-bottom-color:rgba(255,255,255,.13)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 12px 40px rgba(2,25,31,.08)!important;
+  backdrop-filter:blur(18px) saturate(135%);
+  -webkit-backdrop-filter:blur(18px) saturate(135%);
+}
+
+body[data-page="home"] .site-header:not(.is-scrolled) .brand strong,
+body[data-page="home"] .site-header:not(.is-scrolled) .brand small,
+body[data-page="home"] .site-header:not(.is-scrolled) .links a{
+  color:#fff;
+}
+
+body[data-page="home"] .site-header:not(.is-scrolled) .brand small{
+  color:rgba(255,255,255,.7);
+}
+
+body[data-page="home"] .site-header:not(.is-scrolled) .links{
+  background:rgba(255,255,255,.085);
+  border-color:rgba(255,255,255
