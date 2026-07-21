@@ -22,7 +22,7 @@ body[data-page="home"] .hero{
   padding-top:154px!important;
 }
 
-/* Best-performing option: dark transparent glass over the hero,
+/* Selected treatment: dark transparent glass over the hero,
    then a brighter glass surface after scrolling for maximum readability. */
 body[data-page="home"] .site-header:not(.is-scrolled){
   background:linear-gradient(180deg,rgba(4,31,38,.58),rgba(4,31,38,.3))!important;
@@ -65,23 +65,33 @@ body[data-page="home"] .site-header:not(.is-scrolled) .mobile-toggle{
   border-color:rgba(255,255,255,.18)!important;
 }
 
-/* Prevent long French medical terms from clipping or overflowing card boundaries. */
+/* Long French medical terms: keep the grid shrinkable and preserve natural wrapping. */
+.cards{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+}
+
+.card,
+.page-card{
+  min-width:0;
+}
+
 .card h3,
 .page-card h3{
   max-width:100%;
-  overflow-wrap:anywhere;
+  overflow-wrap:break-word;
   word-break:normal;
   hyphens:auto;
   text-wrap:balance;
 }
 
 .cards .card h3{
-  font-size:clamp(1.18rem,1.7vw,1.42rem);
-  line-height:1.12;
+  font-size:clamp(1.12rem,1.45vw,1.34rem);
+  line-height:1.13;
+  letter-spacing:-.018em;
 }
 
 .page-card h3{
-  font-size:clamp(1.18rem,1.55vw,1.42rem);
+  font-size:clamp(1.16rem,1.5vw,1.4rem);
   line-height:1.14;
 }
 
@@ -89,6 +99,10 @@ body[data-page="home"] .site-header:not(.is-scrolled) .mobile-toggle{
   #site-header{height:72px}
   body:not([data-page="home"]) main{padding-top:72px}
   body[data-page="home"] .hero{padding-top:126px!important}
+
+  .cards{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
 
   body[data-page="home"] .site-header:not(.is-scrolled) .links{
     background:rgba(255,255,255,.97)!important;
@@ -108,5 +122,6 @@ body[data-page="home"] .site-header:not(.is-scrolled) .mobile-toggle{
 @media(max-width:620px){
   #site-header{height:72px}
   body[data-page="home"] .hero{padding-top:116px!important}
+  .cards{grid-template-columns:1fr}
   .cards .card h3,.page-card h3{font-size:1.28rem}
 }
