@@ -12,7 +12,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -36,6 +36,15 @@ jobs:
           curl -fsS http://127.0.0.1:4173/rendez-vous.html | grep -q 'Transmettre la demande'
           curl -fsS http://127.0.0.1:4173/backend-config.js | grep -q 'CABINET_LUCIA_BACKEND'
           curl -fsS http://127.0.0.1:4173/public-api.js | grep -q '/api/public/appointment-requests'
+      - name: Browser technical recipe
+        run: npm run test:browser
+      - name: Upload public recipe report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-technical-recipe
+          path: /tmp/public-technical-recipe.json
+          if-no-files-found: warn
       - name: Stop static server
         if: always()
         run: kill "$(cat /tmp/cabinet-public.pid)" 2>/dev/null || true
