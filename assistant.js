@@ -46,8 +46,8 @@
 
     const close = () => {
       panel.classList.remove('open');
+      panel.hidden = true;
       openButton.setAttribute('aria-expanded', 'false');
-      setTimeout(() => { panel.hidden = true; }, 180);
       if (lastFocusedElement instanceof HTMLElement) lastFocusedElement.focus();
     };
 
