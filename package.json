@@ -5,7 +5,7 @@
   "scripts": {
     "test": "node --test tests/*.test.cjs",
     "verify": "npm test && node scripts/verify-static-site.cjs",
-    "test:browser": "node scripts/technical-recipe.cjs"
+    "test:browser": "node -r ./scripts/ignore-rm-enotempty.cjs scripts/technical-recipe.cjs"
   },
   "engines": {
     "node": ">=22"
