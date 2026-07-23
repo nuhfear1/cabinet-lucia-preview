@@ -1,0 +1,12 @@
+{
+  "name": "cabinet-lucia-preview",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "verify": "npm test && node scripts/verify-static-site.cjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
