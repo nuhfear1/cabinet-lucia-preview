@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "test": "node --test tests/*.test.cjs",
-    "verify": "npm test && node scripts/verify-static-site.cjs"
+    "verify": "npm test && node scripts/verify-static-site.cjs",
+    "test:browser": "node scripts/technical-recipe.cjs"
   },
   "engines": {
     "node": ">=22"
