@@ -37,13 +37,13 @@ jobs:
           curl -fsS http://127.0.0.1:4173/backend-config.js | grep -q 'CABINET_LUCIA_BACKEND'
           curl -fsS http://127.0.0.1:4173/public-api.js | grep -q '/api/public/appointment-requests'
       - name: Browser technical recipe
-        run: npm run test:browser
+        run: TECHNICAL_RECIPE_REPORT=public-technical-recipe.json npm run test:browser
       - name: Upload public recipe report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: public-technical-recipe
-          path: /tmp/public-technical-recipe.json
+          path: public-technical-recipe.json
           if-no-files-found: warn
       - name: Stop static server
         if: always()
