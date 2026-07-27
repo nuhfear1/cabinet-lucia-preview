@@ -1,0 +1,32 @@
+/* Temporary visual test: soften only the dark green surfaces without altering layout or the rest of the palette. */
+:root{
+  --navy:#4f747a;
+  --navy2:#3d6269;
+  --premium-navy:#4f747a;
+  --premium-navy-deep:#3d6269;
+}
+body .hero{
+  background:
+    radial-gradient(circle at 78% 18%,rgba(105,188,172,.34),transparent 28%),
+    radial-gradient(circle at 18% 100%,rgba(239,117,95,.13),transparent 34%),
+    linear-gradient(135deg,#3d6269 0%,#466d73 55%,#4f747a 100%) !important;
+}
+body .brandmark{
+  background:linear-gradient(145deg,#3d6269,#5b7e83) !important;
+}
+body .links a.active,
+body .links a[aria-current="page"]{
+  background:linear-gradient(135deg,#3d6269,#5b7e83) !important;
+}
+body .button.dark{
+  background:linear-gradient(135deg,#3d6269,#5b7e83) !important;
+}
+body .steps{
+  background:linear-gradient(145deg,#3d6269,#4f747a) !important;
+}
+body .dark-panel{
+  background:linear-gradient(145deg,#3d6269,#4f747a) !important;
+}
+body footer{
+  background:#3d6269 !important;
+}

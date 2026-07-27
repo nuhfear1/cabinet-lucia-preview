@@ -11,6 +11,7 @@
   ensureStyle('ui.css?v=20260720-premium', 'data-ui-styles');
   ensureStyle('premium.css?v=20260720-premium', 'data-premium-styles');
   ensureStyle('navigation-fixes.css?v=20260720-navfix', 'data-navigation-fixes');
+  ensureStyle('palette-soft-green-test.css?v=20260727-visible', 'data-palette-soft-green-test');
 
   const main = document.querySelector('main');
   if (main && !main.id) main.id = 'main-content';
