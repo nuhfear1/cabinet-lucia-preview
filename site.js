@@ -11,6 +11,7 @@
   ensureStyle('ui.css?v=20260720-premium', 'data-ui-styles');
   ensureStyle('premium.css?v=20260720-premium', 'data-premium-styles');
   ensureStyle('navigation-fixes.css?v=20260720-navfix', 'data-navigation-fixes');
+  ensureStyle('footer-credit.css?v=20260727-credit', 'data-footer-credit-styles');
 
   const main = document.querySelector('main');
   if (main && !main.id) main.id = 'main-content';
@@ -77,7 +78,13 @@
               </p>
             </div>
           </div>
-          <div class="copyright">Prévisualisation — les informations non confirmées ne constituent pas des informations médicales ou administratives définitives.</div>
+          <div class="copyright">
+            <span>Prévisualisation — les informations non confirmées ne constituent pas des informations médicales ou administratives définitives.</span>
+            <div class="footer-credit-badge" aria-label="Conçu par Gary Wilfred-Borilla, Ecom Factory — lien vers la carte de visite à ajouter">
+              <img src="assets/ecom-factory-badge.svg" alt="Conçu par Gary Wilfred-Borilla — Ecom Factory, solutions digitales et IA" loading="lazy" decoding="async">
+              <span class="footer-credit-badge__status">Lien à venir</span>
+            </div>
+          </div>
         </div>
       </footer>`;
   }
