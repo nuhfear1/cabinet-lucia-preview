@@ -13,6 +13,40 @@
   ensureStyle('navigation-fixes.css?v=20260720-navfix', 'data-navigation-fixes');
   ensureStyle('footer-credit.css?v=20260727-credit', 'data-footer-credit-styles');
 
+  const hydrateBase64Images = async () => {
+    const singleImages = [...document.querySelectorAll('img[data-base64-src]')];
+    const splitImages = [...document.querySelectorAll('img[data-base64-parts]')];
+
+    await Promise.all([
+      ...singleImages.map(async (image) => {
+        const response = await fetch(image.dataset.base64Src, { cache: 'force-cache' });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const base64 = (await response.text()).replace(/\s+/g, '');
+        image.src = `data:image/webp;base64,${base64}`;
+      }),
+      ...splitImages.map(async (image) => {
+        const parts = image.dataset.base64Parts
+          .split(',')
+          .map((part) => part.trim())
+          .filter(Boolean);
+        const responses = await Promise.all(
+          parts.map((part) => fetch(part, { cache: 'force-cache' }))
+        );
+        responses.forEach((response) => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        });
+        const base64Parts = await Promise.all(
+          responses.map((response) => response.text())
+        );
+        image.src = `data:image/webp;base64,${base64Parts.join('').replace(/\s+/g, '')}`;
+      })
+    ]);
+  };
+
+  hydrateBase64Images().catch((error) => {
+    console.error('Impossible de charger une image locale du site.', error);
+  });
+
   const main = document.querySelector('main');
   if (main && !main.id) main.id = 'main-content';
 
