@@ -24,12 +24,9 @@
   image-rendering: auto;
 }
 
-.media-photo--walking img {
-  aspect-ratio: 1168 / 784;
-}
-
+.media-photo--walking img,
 .media-photo--nutrition img {
-  aspect-ratio: 1200 / 800;
+  aspect-ratio: 1168 / 784;
 }
 
 @media (max-width: 760px) {
