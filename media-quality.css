@@ -1,0 +1,39 @@
+.media-photo {
+  position: relative;
+  align-self: center;
+  width: 100%;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(16, 59, 69, 0.12);
+  border-radius: 24px;
+  background: #eef3f1;
+  box-shadow: 0 24px 60px rgba(9, 45, 53, 0.12);
+}
+
+.media-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  margin: 0;
+  object-fit: contain;
+  object-position: center;
+  opacity: 1;
+  filter: none;
+  transform: none;
+  image-rendering: auto;
+}
+
+.media-photo--walking img {
+  aspect-ratio: 1168 / 784;
+}
+
+.media-photo--nutrition img {
+  aspect-ratio: 1200 / 800;
+}
+
+@media (max-width: 760px) {
+  .media-photo {
+    border-radius: 18px;
+  }
+}
