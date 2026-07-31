@@ -1,3 +1,4 @@
+# One-time normalization trigger
 name: Normalize image assets once
 
 on:
