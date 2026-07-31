@@ -1,0 +1,261 @@
+name: Normalize image assets once
+
+on:
+  push:
+    paths:
+      - .github/workflows/normalize-image-assets.yml
+
+permissions:
+  contents: write
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Normalize image sources
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import base64
+          import re
+
+          root = Path('.')
+          assets = root / 'assets'
+          placeholder = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='
+
+          def write_verified_base64(source_name: str, destination_name: str) -> None:
+              source = assets / source_name
+              destination = assets / destination_name
+              if not source.is_file():
+                  raise SystemExit(f'Source absente: {source}')
+              source_bytes = source.read_bytes()
+              payload = base64.b64encode(source_bytes).decode('ascii')
+              if base64.b64decode(payload, validate=True) != source_bytes:
+                  raise SystemExit(f'Validation Base64 échouée: {source}')
+              destination.write_text(payload + '\n', encoding='ascii')
+
+          def replace_once(path_name: str, old: str, new: str) -> None:
+              path = root / path_name
+              text = path.read_text(encoding='utf-8')
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'Remplacement attendu une fois dans {path_name}, trouvé {count}')
+              path.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          # Images 3 et 6 : encodage exact des originaux validés.
+          write_verified_base64(
+              'prevention-photo3-original.webp',
+              'prevention-photo3-original.webp.b64',
+          )
+          write_verified_base64(
+              'article-prevention-lifestyle.jpg',
+              'article-prevention-lifestyle.jpg.b64',
+          )
+
+          # Image 1 : réunification sans réencodage des morceaux Base64 existants.
+          human_parts = sorted(assets.glob('generic-human-care.part*'))
+          if not human_parts:
+              raise SystemExit('Aucun morceau Base64 trouvé pour generic-human-care')
+          human_payload = ''.join(''.join(part.read_text(encoding='ascii').split()) for part in human_parts)
+          base64.b64decode(human_payload, validate=True)
+          (assets / 'generic-human-care.webp.b64').write_text(human_payload + '\n', encoding='ascii')
+
+          index_path = root / 'index.html'
+          index_text = index_path.read_text(encoding='utf-8')
+          index_text, count = re.subn(
+              r'data-base64-parts="[^"]+"',
+              'data-base64-src="assets/generic-human-care.webp.b64"',
+              index_text,
+              count=1,
+          )
+          if count != 1:
+              raise SystemExit(f'Image 1 non normalisée: {count} remplacement(s)')
+          index_path.write_text(index_text, encoding='utf-8')
+
+          old_test_image = (
+              f'<img data-base64-src="assets/generic-consultations-hero.webp.b64" '
+              f'src="{placeholder}" alt="Image test temporaire issue de la page Consultations.">'
+              '<span class="label">Test — image 2</span>'
+          )
+
+          image3 = (
+              f'<img data-base64-src="assets/prevention-photo3-original.webp.b64" '
+              f'src="{placeholder}" '
+              'alt="Une femme senior marche dans un environnement végétalisé, illustrant la prévention cardiovasculaire au quotidien.">'
+              '<span class="label">Image d’illustration</span>'
+          )
+          replace_once('prevention.html', old_test_image, image3)
+
+          image6 = (
+              f'<img data-base64-src="assets/article-prevention-lifestyle.jpg.b64" '
+              'data-image-mime="image/jpeg" '
+              f'src="{placeholder}" '
+              'alt="Une femme senior prépare un repas équilibré avec des aliments frais.">'
+              '<span class="label">Image d’illustration</span>'
+          )
+          replace_once('article-prevention.html', old_test_image, image6)
+
+          # Un seul chargeur, strictement identique au modèle validé de l’image 2.
+          site_path = root / 'site.js'
+          site_text = site_path.read_text(encoding='utf-8')
+          start_marker = '  const bytesToBase64 = (buffer) => {'
+          end_marker = "  const main = document.querySelector('main');"
+          start = site_text.find(start_marker)
+          end = site_text.find(end_marker)
+          if start == -1 or end == -1 or end <= start:
+              raise SystemExit('Bloc de chargement actuel introuvable dans site.js')
+
+          canonical_loader = '''  const hydrateImages = async () => {
+            const images = [...document.querySelectorAll('img[data-base64-src]')];
+
+            await Promise.all(
+              images.map(async (image) => {
+                const response = await fetch(image.dataset.base64Src, { cache: 'force-cache' });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const base64Payload = (await response.text()).replace(/\\s+/g, '');
+                const mime = image.dataset.imageMime || 'image/webp';
+                image.src = `data:${mime};base64,${base64Payload}`;
+              })
+            );
+          };
+
+          hydrateImages().catch((error) => {
+            console.error('Impossible de charger une image locale du site.', error);
+          });
+
+          '''
+          site_path.write_text(site_text[:start] + canonical_loader + site_text[end:], encoding='utf-8')
+
+          # Cache-busting limité aux pages effectivement migrées.
+          for page_name in ('index.html', 'prevention.html', 'article-prevention.html'):
+              page = root / page_name
+              text = page.read_text(encoding='utf-8')
+              text, count = re.subn(
+                  r'site\.js\?v=[^"<]+',
+                  'site.js?v=20260731-single-base64',
+                  text,
+                  count=1,
+              )
+              if count != 1:
+                  raise SystemExit(f'Version site.js introuvable dans {page_name}')
+              page.write_text(text, encoding='utf-8')
+
+          # Suppression des sources concurrentes et des anciennes variantes échouées.
+          for part in human_parts:
+              part.unlink()
+
+          keep = {
+              assets / 'prevention-photo3-original.webp.b64',
+              assets / 'article-prevention-lifestyle.jpg.b64',
+          }
+          cleanup_candidates = set(assets.glob('generic-prevention-hero*'))
+          cleanup_candidates.update(assets.glob('prevention-photo3-original.*'))
+          cleanup_candidates.update(assets.glob('article-prevention-lifestyle.*'))
+          for candidate in cleanup_candidates:
+              if candidate not in keep and candidate.is_file():
+                  candidate.unlink()
+
+          # Les anciens chargeurs/styles ne sont retirés que s’ils ne sont plus référencés.
+          for obsolete_name in ('image-binary-loader.js', 'media-quality.css'):
+              obsolete = root / obsolete_name
+              if not obsolete.exists():
+                  continue
+              referenced_by = []
+              for suffix in ('*.html', '*.css', '*.js'):
+                  for text_file in root.rglob(suffix):
+                      if text_file == obsolete:
+                          continue
+                      try:
+                          if obsolete_name in text_file.read_text(encoding='utf-8'):
+                              referenced_by.append(str(text_file))
+                      except UnicodeDecodeError:
+                          pass
+              if referenced_by:
+                  raise SystemExit(f'{obsolete_name} encore référencé par: {referenced_by}')
+              obsolete.unlink()
+
+          # Contrôles finaux : aucune page ne doit garder un ancien mécanisme.
+          html_text = '\n'.join(path.read_text(encoding='utf-8') for path in root.glob('*.html'))
+          forbidden = ('data-base64-parts=', 'data-image-src=', 'data-binary-src=', 'Test — image 2')
+          for marker in forbidden:
+              if marker in html_text:
+                  raise SystemExit(f'Mécanisme obsolète encore présent: {marker}')
+
+          final_assets = (
+              'assets/generic-human-care.webp.b64',
+              'assets/generic-consultations-hero.webp.b64',
+              'assets/prevention-photo3-original.webp.b64',
+              'assets/generic-ecg-hero.b64',
+              'assets/article-prevention-lifestyle.jpg.b64',
+          )
+          for asset_name in final_assets:
+              asset = root / asset_name
+              if not asset.is_file():
+                  raise SystemExit(f'Asset final absent: {asset_name}')
+              base64.b64decode(''.join(asset.read_text(encoding='ascii').split()), validate=True)
+
+          docs = root / 'docs'
+          docs.mkdir(exist_ok=True)
+          (docs / 'image-loading.md').write_text('''# Chargement des images — règle canonique et incident des images 3 et 6
+
+## Règle canonique
+
+Toutes les photographies éditoriales intégrées au site utilisent désormais exactement le mécanisme validé avec l’image 2 :
+
+- un seul fichier Base64 local par photographie ;
+- une seule balise `img` avec `data-base64-src` ;
+- le pixel transparent commun comme `src` initial ;
+- le chargeur unique de `site.js` ;
+- `data-image-mime="image/jpeg"` uniquement lorsqu’une image n’est pas en WebP.
+
+Il ne doit plus exister, pour une même photographie, de fichier natif publié en parallèle, d’URL `raw.githubusercontent.com`, de source Figma de secours, de chargeur binaire séparé, de `data-image-src`, de `data-binary-src` ni de fichier Base64 découpé en plusieurs morceaux.
+
+## Cartographie des photographies normalisées
+
+- Image 1 : `assets/generic-human-care.webp.b64`
+- Image 2 : `assets/generic-consultations-hero.webp.b64`
+- Image 3 : `assets/prevention-photo3-original.webp.b64`
+- Image 4 : `assets/generic-ecg-hero.b64`
+- Image 6 : `assets/article-prevention-lifestyle.jpg.b64`
+
+## Ce que le test a établi
+
+Les commits de diagnostic `b917c6cf97160757afceb6ec9c96b8064d84e858` et `34626159a032235a51024cf64abd15797f105002` ont placé l’image 2, déjà fonctionnelle, dans les emplacements des images 3 et 6. Elle s’y est affichée correctement.
+
+Ce résultat confirme que les conteneurs HTML, les styles des pages et le chargeur Base64 partagé fonctionnaient dans ces deux emplacements. Le défaut ne venait donc pas de la mise en page.
+
+## Pourquoi les tentatives précédentes étaient fragiles
+
+Les images 3 et 6 ont successivement été servies par plusieurs chaînes concurrentes : fichiers binaires natifs, extensions et types MIME expérimentés, URLs GitHub brutes, chemins GitHub Pages directs, chargeur binaire séparé, conversion binaire dans `site.js`, puis différentes versions mises en cache. Plusieurs fichiers représentant le même emplacement ont ainsi coexisté.
+
+Le test ne permet pas d’attribuer l’échec à un unique octet ou à un unique cache, mais il isole clairement la chaîne de livraison des fichiers 3 et 6 comme origine du problème. La coexistence de plusieurs sources et de plusieurs chargeurs rendait le résultat dépendant du chemin effectivement servi et de sa version en cache.
+
+## Correction définitive
+
+Les originaux validés des images 3 et 6 ont été encodés automatiquement en Base64. Chaque charge a ensuite été redécodée et comparée octet pour octet à son original avant la suppression des fichiers natifs et des variantes précédentes.
+
+L’image 1 a également été réunifiée depuis ses morceaux Base64 existants. `site.js` ne conserve maintenant qu’un seul parcours de chargement, identique à celui qui avait déjà validé l’image 2.
+''', encoding='utf-8')
+
+          # Le workflow est volontairement supprimé après son unique exécution.
+          workflow = root / '.github/workflows/normalize-image-assets.yml'
+          if workflow.exists():
+              workflow.unlink()
+          PY
+
+      - name: Commit normalized assets
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git diff --cached --quiet && exit 0
+          git commit -m "Normalize all editorial image loading"
+          git push
