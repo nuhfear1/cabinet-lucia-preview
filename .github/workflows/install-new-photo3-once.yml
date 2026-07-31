@@ -1,0 +1,67 @@
+name: Install new photo 3 once
+
+on:
+  push:
+    paths:
+      - .photo3-upload/READY
+
+permissions:
+  contents: write
+
+jobs:
+  install-photo3:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the supplied JPEG using the image 2 method
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import base64
+          import shutil
+
+          root = Path('.')
+          upload = root / '.photo3-upload'
+          parts = sorted(upload.glob('part*'))
+          if not parts:
+              raise SystemExit('Aucun fragment de la nouvelle photo 3.')
+
+          payload = ''.join(part.read_text(encoding='ascii').strip() for part in parts)
+          image = base64.b64decode(payload, validate=True)
+          if not image.startswith(b'\xff\xd8\xff'):
+              raise SystemExit('La nouvelle photo 3 n’est pas un JPEG valide.')
+
+          destination = root / 'assets/generic-prevention-hero.jpg.b64'
+          destination.write_text(payload, encoding='ascii')
+
+          page = root / 'prevention.html'
+          html = page.read_text(encoding='utf-8')
+          old = 'data-base64-src="assets/generic-prevention-hero.webp.b64"'
+          new = 'data-base64-src="assets/generic-prevention-hero.jpg.b64" data-image-mime="image/jpeg"'
+          if html.count(old) != 1:
+              raise SystemExit(f'Référence actuelle de la photo 3 trouvée {html.count(old)} fois.')
+          html = html.replace(old, new, 1)
+          page.write_text(html, encoding='utf-8')
+
+          for obsolete in (
+              root / 'assets/generic-prevention-hero.webp.b64',
+              root / 'assets/prevention-photo3-original.webp',
+          ):
+              if obsolete.exists():
+                  obsolete.unlink()
+
+          shutil.rmtree(upload)
+          (root / '.github/workflows/install-new-photo3-once.yml').unlink()
+          PY
+
+      - name: Commit the targeted replacement
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "Replace prevention photo 3 with supplied JPEG"
+          git push
