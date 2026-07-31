@@ -18,3 +18,4 @@ La connexion est préparée derrière un feature flag désactivé par défaut.
 
 Aucune donnée patient réelle ne doit être utilisée pendant la préproduction technique.
 Pages refresh — 30 juillet 2026
+Pages refresh — images 3 et 6 locales
