@@ -17,3 +17,4 @@ La connexion est préparée derrière un feature flag désactivé par défaut.
 - Retour arrière immédiat : `TASK7_ROLLBACK.md`
 
 Aucune donnée patient réelle ne doit être utilisée pendant la préproduction technique.
+Pages refresh — 30 juillet 2026
