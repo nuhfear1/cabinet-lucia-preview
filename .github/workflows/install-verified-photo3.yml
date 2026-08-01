@@ -1,0 +1,84 @@
+name: Install verified photo 3
+
+on:
+  push:
+    paths:
+      - '.photo3-upload/READY'
+
+permissions:
+  contents: write
+
+jobs:
+  install-photo3:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rebuild, verify and install photo 3
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64
+          import hashlib
+          import shutil
+
+          root = Path('.')
+          upload = root / '.photo3-upload'
+          expected_parts = {
+              'part00.txt': (10000, 'd34fb25f137431b26b4370bb6aa09915ccaa34cb4408b4ea88f533db3907c30b'),
+              'part01.txt': (10000, 'ad819416201331a1449aa439e4e440a0bd32603aba8d42a0ef7d8696f75cee7f'),
+              'part02.txt': (10000, '1ff9c0f4660239223d44d703d6a35f3a6fc13ee61c95cd15f9a20f0f37eb38d8'),
+              'part03.txt': (8824, 'de82ac92fbd712a1f47a7f47ccd79e966efb8b9fdb3934da6289fbcd9632df57'),
+          }
+
+          chunks = []
+          for name, (expected_length, expected_hash) in expected_parts.items():
+              path = upload / name
+              if not path.exists():
+                  raise SystemExit(f'Missing {name}')
+              chunk = path.read_text(encoding='ascii').strip()
+              digest = hashlib.sha256(chunk.encode('ascii')).hexdigest()
+              if len(chunk) != expected_length or digest != expected_hash:
+                  raise SystemExit(f'Invalid {name}: length={len(chunk)} sha256={digest}')
+              chunks.append(chunk)
+
+          payload = ''.join(chunks)
+          if len(payload) != 38824:
+              raise SystemExit(f'Unexpected Base64 length: {len(payload)}')
+          if hashlib.sha256(payload.encode('ascii')).hexdigest() != '51c489ee1c6fa770d7aa22d4a7499a9016f367843a0cc9b00d0978881ed156d9':
+              raise SystemExit('Unexpected complete Base64 hash')
+
+          jpeg = base64.b64decode(payload, validate=True)
+          if len(jpeg) != 29116:
+              raise SystemExit(f'Unexpected JPEG length: {len(jpeg)}')
+          if not jpeg.startswith(b'\xff\xd8\xff') or not jpeg.endswith(b'\xff\xd9'):
+              raise SystemExit('Invalid JPEG markers')
+          if hashlib.sha256(jpeg).hexdigest() != '25e0a9846df9f5fa2440542bf39665bdb62df9f676481da00743252fd77f6f98':
+              raise SystemExit('Unexpected JPEG hash')
+
+          asset = root / 'assets/generic-prevention-hero.jpg.b64'
+          asset.write_text(payload, encoding='ascii')
+
+          page = root / 'prevention.html'
+          html = page.read_text(encoding='utf-8')
+          old = 'data-base64-src="assets/generic-prevention-hero.jpg.b64"'
+          new = 'data-base64-src="assets/generic-prevention-hero.jpg.b64?v=20260731-photo3-verified"'
+          if html.count(old) != 1:
+              raise SystemExit(f'Expected one unversioned photo reference, found {html.count(old)}')
+          page.write_text(html.replace(old, new, 1), encoding='utf-8')
+
+          shutil.rmtree(upload)
+          workflow = root / '.github/workflows/install-verified-photo3.yml'
+          workflow.unlink()
+          PY
+
+      - name: Commit verified installation
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "Install verified prevention photo 3"
+          git push
