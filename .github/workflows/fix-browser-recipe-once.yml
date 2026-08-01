@@ -1,0 +1,73 @@
+name: Fix browser recipe once
+
+on:
+  push:
+    paths:
+      - '.fix-browser-recipe-trigger'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make Chromium debugging startup reliable
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/technical-recipe.cjs')
+          source = path.read_text(encoding='utf-8')
+
+          old_args = """    '--hide-scrollbars',
+    '--remote-debugging-port=9222',
+    `--user-data-dir=${userDataDir}`,
+"""
+          new_args = """    '--hide-scrollbars',
+    '--remote-debugging-address=127.0.0.1',
+    '--remote-debugging-port=9222',
+    '--no-first-run',
+    '--no-default-browser-check',
+    `--user-data-dir=${userDataDir}`,
+"""
+          if source.count(old_args) != 1:
+              raise SystemExit(f'Chrome argument block found {source.count(old_args)} times')
+          source = source.replace(old_args, new_args, 1)
+
+          old_wait = """    await waitForJson('http://127.0.0.1:9222/json/version');
+"""
+          new_wait = """    try {
+      await waitForJson('http://127.0.0.1:9222/json/version');
+    } catch (error) {
+      const exitCode = chrome.exitCode;
+      const stderr = await new Promise((resolve) => {
+        let output = '';
+        chrome.stderr?.on('data', (chunk) => { output += chunk.toString(); });
+        setTimeout(() => resolve(output.trim()), 250);
+      });
+      throw new Error(`Chromium debugging endpoint unavailable${exitCode === null ? '' : ` (exit ${exitCode})`}${stderr ? `: ${stderr}` : ''}`, { cause: error });
+    }
+"""
+          if source.count(old_wait) != 1:
+              raise SystemExit(f'Chrome wait statement found {source.count(old_wait)} times')
+          source = source.replace(old_wait, new_wait, 1)
+          path.write_text(source, encoding='utf-8')
+
+          for temporary in (
+              Path('ci-diagnostic.txt'),
+              Path('.fix-browser-recipe-trigger'),
+              Path('.github/workflows/fix-browser-recipe-once.yml'),
+          ):
+              if temporary.exists():
+                  temporary.unlink()
+          PY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "Fix Chromium startup in public browser recipe"
+          git push
