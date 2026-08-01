@@ -133,6 +133,26 @@ test('appointment success requires the complete canonical response', () => {
   assert.match(source, /Votre demande a bien été transmise au cabinet/);
 });
 
+test('booking validates trimmed first and last names against the backend minimum', () => {
+  const source = fs.readFileSync(path.join(root, 'booking.js'), 'utf8');
+  assert.match(source, /const firstName = form\.firstName\.value\.trim\(\);/);
+  assert.match(source, /firstName && firstName\.length < 2/);
+  assert.match(source, /Le prénom doit contenir au moins deux caractères\./);
+  assert.match(source, /const lastName = form\.lastName\.value\.trim\(\);/);
+  assert.match(source, /lastName && lastName\.length < 2/);
+  assert.match(source, /Le nom doit contenir au moins deux caractères\./);
+});
+
+test('booking payload remains the canonical trimmed API contract', () => {
+  const source = fs.readFileSync(path.join(root, 'booking.js'), 'utf8');
+  for (const property of ['firstName', 'lastName', 'phone', 'email']) {
+    assert.match(source, new RegExp(`${property}: form\\.${property}\\.value\\.trim\\(\\)`));
+  }
+  for (const property of ['reason', 'location', 'preferredAt', 'consent']) {
+    assert.match(source, new RegExp(`\\b${property}:`));
+  }
+});
+
 test('patient space exposes only local resources and keeps the portal hidden', () => {
   const html = fs.readFileSync(path.join(root, 'espace-patient.html'), 'utf8');
   for (const label of ['Préparer ma consultation', 'Comprendre l’ECG', 'Préparer une échographie', 'Suivre ma tension', 'Conseils de prévention', 'Comprendre son traitement', 'Trouver les cabinets', 'Demander un rendez-vous']) assert.match(html, new RegExp(label));
