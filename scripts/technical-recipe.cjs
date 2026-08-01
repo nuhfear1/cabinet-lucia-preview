@@ -239,6 +239,7 @@ async function checkBooking(client, failures) {
   await navigate(client, 'rendez-vous.html', viewports[0]);
   const result = await evaluate(client, `(async () => {
     const form = document.querySelector('[data-booking-wizard]');
+    const nextFrame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     const setValue = (selector, value) => {
       const field = document.querySelector(selector);
       field.value = value;
@@ -259,14 +260,15 @@ async function checkBooking(client, failures) {
     setValue('[name="firstName"]', ' A ');
     setValue('[name="lastName"]', 'Nom');
     setValue('[name="phone"]', '0690000000');
-    form.requestSubmit();
-    await Promise.resolve();
+    document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
+    await nextFrame();
     const shortFirstNameRejected = !document.querySelector('[data-booking-step="3"]').hidden
       && document.activeElement === form.firstName
       && form.firstName.getAttribute('aria-invalid') === 'true';
     setValue('[name="firstName"]', 'Al');
     setValue('[name="lastName"]', ' B ');
     document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
+    await nextFrame();
     const shortLastNameRejected = !document.querySelector('[data-booking-step="3"]').hidden
       && document.activeElement === form.lastName
       && form.lastName.getAttribute('aria-invalid') === 'true';
