@@ -116,6 +116,32 @@ async function evaluate(client, expression) {
   return result.result?.value;
 }
 
+async function clickAsUser(client, selector) {
+  const point = await evaluate(client, `(() => {
+    const element = document.querySelector(${JSON.stringify(selector)});
+    if (!element) return null;
+
+    const rect = element.getBoundingClientRect();
+    const style = getComputedStyle(element);
+    if (rect.width <= 0 || rect.height <= 0 || style.visibility === 'hidden' || style.display === 'none') return null;
+
+    return {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2
+    };
+  })()`);
+
+  if (!point) throw new Error(`Élément introuvable ou invisible : ${selector}`);
+
+  await client.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: point.x, y: point.y });
+  await client.send('Input.dispatchMouseEvent', {
+    type: 'mousePressed', x: point.x, y: point.y, button: 'left', clickCount: 1
+  });
+  await client.send('Input.dispatchMouseEvent', {
+    type: 'mouseReleased', x: point.x, y: point.y, button: 'left', clickCount: 1
+  });
+}
+
 async function waitForPage(client) {
   for (let attempt = 0; attempt < 100; attempt += 1) {
     const state = await evaluate(client, 'document.readyState');
@@ -237,9 +263,7 @@ async function checkNavigationAndAssistant(client, failures) {
 
 async function checkBooking(client, failures) {
   await navigate(client, 'rendez-vous.html', viewports[0]);
-  const result = await evaluate(client, `(async () => {
-    const form = document.querySelector('[data-booking-wizard]');
-    const nextFrame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  await evaluate(client, `(() => {
     const setValue = (selector, value) => {
       const field = document.querySelector(selector);
       field.value = value;
@@ -248,56 +272,93 @@ async function checkBooking(client, failures) {
     };
     setValue('[name="reason"]', 'Suivi cardiologique');
     setValue('[name="place"]', 'MORNE_A_LEAU');
-    document.querySelector('[data-booking-next]').click();
+  })()`);
+  await clickAsUser(client, '[data-booking-step="1"] [data-booking-next]');
+
+  await evaluate(client, `(() => {
     const tomorrow = new Date(Date.now() + 86400000 * 2).toISOString().slice(0, 10);
-    setValue('[name="date"]', tomorrow);
+    const date = document.querySelector('[name="date"]');
+    date.value = tomorrow;
+    date.dispatchEvent(new Event('input', { bubbles: true }));
+    date.dispatchEvent(new Event('change', { bubbles: true }));
     const slot = document.querySelector('[name="slot"][value="09:00"]');
     slot.checked = true;
     slot.dispatchEvent(new Event('change', { bubbles: true }));
-    document.querySelector('[data-booking-step="2"] [data-booking-next]').click();
-    let requests = 0;
-    window.CabinetLuciaApi.submitAppointmentRequest = async () => { requests += 1; };
+  })()`);
+  await clickAsUser(client, '[data-booking-step="2"] [data-booking-next]');
+
+  await evaluate(client, `(() => {
+    const setValue = (selector, value) => {
+      const field = document.querySelector(selector);
+      field.value = value;
+      field.dispatchEvent(new Event('input', { bubbles: true }));
+      field.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+    window.__technicalRecipeRequests = 0;
+    window.CabinetLuciaApi.submitAppointmentRequest = async () => { window.__technicalRecipeRequests += 1; };
     setValue('[name="firstName"]', ' A ');
     setValue('[name="lastName"]', 'Nom');
     setValue('[name="phone"]', '0690000000');
-    document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
-    await nextFrame();
-    const shortFirstNameRejected = !document.querySelector('[data-booking-step="3"]').hidden
-      && document.activeElement === form.firstName
-      && form.firstName.getAttribute('aria-invalid') === 'true';
+  })()`);
+  await clickAsUser(client, '[data-booking-step="3"] [data-booking-next]');
+
+  const firstNameValidation = await inspectBookingValidation(client);
+  await evaluate(client, `(() => {
+    const setValue = (selector, value) => {
+      const field = document.querySelector(selector);
+      field.value = value;
+      field.dispatchEvent(new Event('input', { bubbles: true }));
+      field.dispatchEvent(new Event('change', { bubbles: true }));
+    };
     setValue('[name="firstName"]', 'Al');
     setValue('[name="lastName"]', ' B ');
-    document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
-    await nextFrame();
-    const shortLastNameRejected = !document.querySelector('[data-booking-step="3"]').hidden
-      && document.activeElement === form.lastName
-      && form.lastName.getAttribute('aria-invalid') === 'true';
-    setValue('[name="lastName"]', 'Bo');
-    document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
-    const twoCharacterNamesAccepted = !document.querySelector('[data-booking-step="4"]').hidden;
-    document.querySelector('[data-booking-step="4"] [data-booking-back]').click();
+  })()`);
+  await clickAsUser(client, '[data-booking-step="3"] [data-booking-next]');
+
+  const lastNameValidation = await inspectBookingValidation(client);
+  await evaluate(client, `(() => {
+    const field = document.querySelector('[name="lastName"]');
+    field.value = 'Bo';
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+    field.dispatchEvent(new Event('change', { bubbles: true }));
+  })()`);
+  await clickAsUser(client, '[data-booking-step="3"] [data-booking-next]');
+  const twoCharacterNamesAccepted = await evaluate(client, `!document.querySelector('[data-booking-step="4"]').hidden`);
+
+  await clickAsUser(client, '[data-booking-step="4"] [data-booking-back]');
+  await clickAsUser(client, '[data-booking-step="3"] [data-booking-back]');
+  await clickAsUser(client, '[data-booking-step="2"] [data-booking-next]');
+  await evaluate(client, `(() => {
+    const setValue = (selector, value) => {
+      const field = document.querySelector(selector);
+      field.value = value;
+      field.dispatchEvent(new Event('input', { bubbles: true }));
+      field.dispatchEvent(new Event('change', { bubbles: true }));
+    };
     setValue('[name="firstName"]', 'Marie');
     setValue('[name="lastName"]', 'Recette');
     setValue('[name="phone"]', '0690000000');
     setValue('[name="email"]', 'marie.recette@example.test');
-    document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
+  })()`);
+  await clickAsUser(client, '[data-booking-step="3"] [data-booking-next]');
+
+  const result = await evaluate(client, `(async () => {
+    const form = document.querySelector('[data-booking-wizard]');
     const step4 = document.querySelector('[data-booking-step="4"]');
     const summary = step4?.textContent || '';
     const consent = document.querySelector('[name="consent"]');
     consent.checked = true;
     consent.dispatchEvent(new Event('input', { bubbles: true }));
     form.requestSubmit();
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await Promise.resolve();
     return {
       step4Visible: Boolean(step4 && !step4.hidden),
       summaryOk: summary.includes('Marie Recette') && summary.includes('Morne-à-l’Eau') && summary.includes('Suivi cardiologique'),
       consentRequired: consent.required,
       resultText: document.getElementById('booking-result')?.textContent || '',
       backendEnabled: window.CabinetLuciaApi?.getConfig?.().enabled,
-      shortFirstNameRejected,
-      shortLastNameRejected,
       twoCharacterNamesAccepted,
-      invalidRequests: requests
+      invalidRequests: window.__technicalRecipeRequests
     };
   })()`);
   assert(result.step4Visible, 'Le parcours de rendez-vous n’atteint pas l’étape de vérification.', failures);
@@ -305,10 +366,45 @@ async function checkBooking(client, failures) {
   assert(result.consentRequired, 'Le consentement n’est pas obligatoire.', failures);
   assert(result.backendEnabled === false, 'Le backend public doit rester désactivé pendant cette recette.', failures);
   assert(result.resultText.includes('Aucune donnée n’a été transmise'), 'Le mode de démonstration ne confirme pas clairement l’absence de transmission.', failures);
-  assert(result.shortFirstNameRejected, 'Un prénom d’un caractère, espaces extérieurs compris, doit être refusé et recevoir le focus.', failures);
-  assert(result.shortLastNameRejected, 'Un nom d’un caractère, espaces extérieurs compris, doit être refusé et recevoir le focus.', failures);
+  assert(firstNameValidation.step3Visible, 'Le prénom invalide doit laisser l’étape 3 visible.', failures);
+  assert(firstNameValidation.firstNameAriaInvalid === 'true', 'Le prénom invalide doit porter aria-invalid="true".', failures);
+  assert(Boolean(firstNameValidation.firstNameErrorText), 'Le prénom invalide doit afficher un message d’erreur.', failures);
+  assert(firstNameValidation.activeElementName === 'firstName', `Le prénom invalide doit recevoir le focus (élément actif : ${firstNameValidation.activeElementTag}#${firstNameValidation.activeElementId}[name="${firstNameValidation.activeElementName}"]).`, failures);
+  assert(firstNameValidation.requests === 0, 'Le prénom invalide ne doit déclencher aucune requête.', failures);
+  assert(lastNameValidation.step3Visible, 'Le nom invalide doit laisser l’étape 3 visible.', failures);
+  assert(lastNameValidation.lastNameAriaInvalid === 'true', 'Le nom invalide doit porter aria-invalid="true".', failures);
+  assert(Boolean(lastNameValidation.lastNameErrorText), 'Le nom invalide doit afficher un message d’erreur.', failures);
+  assert(lastNameValidation.activeElementName === 'lastName', `Le nom invalide doit recevoir le focus (élément actif : ${lastNameValidation.activeElementTag}#${lastNameValidation.activeElementId}[name="${lastNameValidation.activeElementName}"]).`, failures);
+  assert(lastNameValidation.requests === 0, 'Le nom invalide ne doit déclencher aucune requête.', failures);
   assert(result.twoCharacterNamesAccepted, 'Les prénoms et noms de deux caractères doivent être acceptés.', failures);
   assert(result.invalidRequests === 0, 'Une validation de nom incorrecte ne doit déclencher aucune requête.', failures);
+  return {
+    ...result,
+    shortFirstNameRejected: firstNameValidation.step3Visible && firstNameValidation.firstNameAriaInvalid === 'true'
+      && Boolean(firstNameValidation.firstNameErrorText) && firstNameValidation.activeElementName === 'firstName',
+    shortLastNameRejected: lastNameValidation.step3Visible && lastNameValidation.lastNameAriaInvalid === 'true'
+      && Boolean(lastNameValidation.lastNameErrorText) && lastNameValidation.activeElementName === 'lastName',
+    firstNameValidation,
+    lastNameValidation
+  };
+}
+
+async function inspectBookingValidation(client) {
+  return evaluate(client, `(() => {
+    const form = document.querySelector('[data-booking-wizard]');
+    const activeElement = document.activeElement;
+    return {
+      step3Visible: !document.querySelector('[data-booking-step="3"]').hidden,
+      activeElementId: activeElement?.id || '',
+      activeElementName: activeElement?.getAttribute('name') || '',
+      activeElementTag: activeElement?.tagName || '',
+      firstNameAriaInvalid: form.firstName.getAttribute('aria-invalid'),
+      firstNameErrorText: form.firstName.closest('.field')?.querySelector('.field-error')?.textContent || '',
+      lastNameAriaInvalid: form.lastName.getAttribute('aria-invalid'),
+      lastNameErrorText: form.lastName.closest('.field')?.querySelector('.field-error')?.textContent || '',
+      requests: window.__technicalRecipeRequests
+    };
+  })()`);
 }
 
 async function main() {
@@ -316,6 +412,7 @@ async function main() {
   const results = [];
   const browserErrors = [];
   const badResponses = [];
+  let booking;
   const chromePath = findChrome();
   const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cabinet-lucia-chrome-'));
   const chrome = spawn(chromePath, [
@@ -369,7 +466,7 @@ async function main() {
 
     await checkInternalLinks(allLinks, failures);
     await checkNavigationAndAssistant(client, failures);
-    await checkBooking(client, failures);
+    booking = await checkBooking(client, failures);
     for (const error of [...new Set(browserErrors)]) failures.push(`Erreur JavaScript navigateur : ${error}`);
     for (const response of [...new Set(badResponses)]) failures.push(`Ressource interne indisponible : ${response}`);
   } finally {
@@ -384,6 +481,7 @@ async function main() {
     pages,
     viewports,
     results,
+    booking,
     failures,
     limitations: [
       'La CI gratuite exécute Chromium. Safari, Firefox et Edge restent à vérifier manuellement sur leurs systèmes réels.',
