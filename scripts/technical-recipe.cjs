@@ -254,6 +254,26 @@ async function checkBooking(client, failures) {
     slot.checked = true;
     slot.dispatchEvent(new Event('change', { bubbles: true }));
     document.querySelector('[data-booking-step="2"] [data-booking-next]').click();
+    let requests = 0;
+    window.CabinetLuciaApi.submitAppointmentRequest = async () => { requests += 1; };
+    setValue('[name="firstName"]', ' A ');
+    setValue('[name="lastName"]', 'Nom');
+    setValue('[name="phone"]', '0690000000');
+    form.requestSubmit();
+    await Promise.resolve();
+    const shortFirstNameRejected = !document.querySelector('[data-booking-step="3"]').hidden
+      && document.activeElement === form.firstName
+      && form.firstName.getAttribute('aria-invalid') === 'true';
+    setValue('[name="firstName"]', 'Al');
+    setValue('[name="lastName"]', ' B ');
+    document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
+    const shortLastNameRejected = !document.querySelector('[data-booking-step="3"]').hidden
+      && document.activeElement === form.lastName
+      && form.lastName.getAttribute('aria-invalid') === 'true';
+    setValue('[name="lastName"]', 'Bo');
+    document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
+    const twoCharacterNamesAccepted = !document.querySelector('[data-booking-step="4"]').hidden;
+    document.querySelector('[data-booking-step="4"] [data-booking-back]').click();
     setValue('[name="firstName"]', 'Marie');
     setValue('[name="lastName"]', 'Recette');
     setValue('[name="phone"]', '0690000000');
@@ -271,7 +291,11 @@ async function checkBooking(client, failures) {
       summaryOk: summary.includes('Marie Recette') && summary.includes('Morne-à-l’Eau') && summary.includes('Suivi cardiologique'),
       consentRequired: consent.required,
       resultText: document.getElementById('booking-result')?.textContent || '',
-      backendEnabled: window.CabinetLuciaApi?.getConfig?.().enabled
+      backendEnabled: window.CabinetLuciaApi?.getConfig?.().enabled,
+      shortFirstNameRejected,
+      shortLastNameRejected,
+      twoCharacterNamesAccepted,
+      invalidRequests: requests
     };
   })()`);
   assert(result.step4Visible, 'Le parcours de rendez-vous n’atteint pas l’étape de vérification.', failures);
@@ -279,6 +303,10 @@ async function checkBooking(client, failures) {
   assert(result.consentRequired, 'Le consentement n’est pas obligatoire.', failures);
   assert(result.backendEnabled === false, 'Le backend public doit rester désactivé pendant cette recette.', failures);
   assert(result.resultText.includes('Aucune donnée n’a été transmise'), 'Le mode de démonstration ne confirme pas clairement l’absence de transmission.', failures);
+  assert(result.shortFirstNameRejected, 'Un prénom d’un caractère, espaces extérieurs compris, doit être refusé et recevoir le focus.', failures);
+  assert(result.shortLastNameRejected, 'Un nom d’un caractère, espaces extérieurs compris, doit être refusé et recevoir le focus.', failures);
+  assert(result.twoCharacterNamesAccepted, 'Les prénoms et noms de deux caractères doivent être acceptés.', failures);
+  assert(result.invalidRequests === 0, 'Une validation de nom incorrecte ne doit déclencher aucune requête.', failures);
 }
 
 async function main() {

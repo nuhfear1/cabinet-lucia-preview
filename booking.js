@@ -95,6 +95,18 @@
         required(form.firstName, 'Indiquez votre prénom.', state);
         required(form.lastName, 'Indiquez votre nom.', state);
         required(form.phone, 'Indiquez un numéro de téléphone.', state);
+        const firstName = form.firstName.value.trim();
+        if (firstName && firstName.length < 2) {
+          fieldError(form.firstName, 'Le prénom doit contenir au moins deux caractères.');
+          state.first ||= form.firstName;
+          state.valid = false;
+        }
+        const lastName = form.lastName.value.trim();
+        if (lastName && lastName.length < 2) {
+          fieldError(form.lastName, 'Le nom doit contenir au moins deux caractères.');
+          state.first ||= form.lastName;
+          state.valid = false;
+        }
         if (form.phone.value.trim() && form.phone.value.trim().length < 6) {
           fieldError(form.phone, 'Le numéro de téléphone est trop court.');
           state.first ||= form.phone;
