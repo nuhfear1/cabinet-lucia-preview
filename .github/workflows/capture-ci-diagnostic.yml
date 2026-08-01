@@ -1,0 +1,74 @@
+name: Capture CI diagnostic once
+
+on:
+  push:
+    paths:
+      - '.ci-diagnostic-trigger'
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Reproduce Public site CI and save logs
+        shell: bash
+        run: |
+          set +e
+          : > ci-diagnostic.txt
+          {
+            echo '=== npm install --package-lock-only ==='
+            npm install --package-lock-only --ignore-scripts
+            echo "status=$?"
+
+            echo '=== npm ci ==='
+            npm ci --ignore-scripts
+            echo "status=$?"
+
+            echo '=== npm run verify ==='
+            npm run verify
+            echo "status=$?"
+
+            echo '=== start static server ==='
+            python3 -m http.server 4173 >/tmp/cabinet-public.log 2>&1 &
+            server_pid=$!
+            for i in {1..20}; do
+              curl -fsS http://127.0.0.1:4173/index.html >/dev/null && break
+              sleep 1
+            done
+
+            echo '=== smoke tests ==='
+            curl -fsS http://127.0.0.1:4173/rendez-vous.html | grep -q 'Transmettre la demande'
+            echo "rendez-vous=$?"
+            curl -fsS http://127.0.0.1:4173/backend-config.js | grep -q 'CABINET_LUCIA_BACKEND'
+            echo "backend-config=$?"
+            curl -fsS http://127.0.0.1:4173/public-api.js | grep -q '/api/public/appointment-requests'
+            echo "public-api=$?"
+
+            echo '=== browser technical recipe ==='
+            TECHNICAL_RECIPE_REPORT=public-technical-recipe.json npm run test:browser
+            echo "browser-status=$?"
+            if [ -f public-technical-recipe.json ]; then
+              echo '=== public-technical-recipe.json ==='
+              cat public-technical-recipe.json
+            fi
+            echo '=== static server log ==='
+            cat /tmp/cabinet-public.log
+            kill "$server_pid" 2>/dev/null || true
+          } >> ci-diagnostic.txt 2>&1
+
+          rm -f .ci-diagnostic-trigger
+          rm -f .github/workflows/capture-ci-diagnostic.yml
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A ci-diagnostic.txt .ci-diagnostic-trigger .github/workflows/capture-ci-diagnostic.yml
+          git commit -m "Capture Public site CI diagnostic"
+          git push
