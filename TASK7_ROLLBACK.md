@@ -9,7 +9,8 @@ window.CABINET_LUCIA_BACKEND_CONFIG = {
   enabled: false,
   baseUrl: "",
   timeoutMs: 8000,
-  environment: "preview"
+  environment: "connection-ready",
+  patientPortalUrl: ""
 };
 ```
 

@@ -10,14 +10,15 @@ Le fichier `backend-config.js` lit une configuration injectée avant `app.js` :
 <script>
 window.CABINET_LUCIA_BACKEND_CONFIG = {
   enabled: false,
-  baseUrl: "https://backend-preproduction.example",
+  baseUrl: "",
   timeoutMs: 8000,
-  environment: "preproduction"
+  environment: "connection-ready",
+  patientPortalUrl: ""
 };
 </script>
 ```
 
-L’activation est refusée si `baseUrl` n’utilise pas HTTPS.
+L’activation est refusée si `baseUrl` n’utilise pas HTTPS, si l’environnement n’est pas explicitement `staging` ou `production`, ou si l’hôte contient `example`, `localhost` ou `.invalid`.
 
 ## Activation de préproduction
 
