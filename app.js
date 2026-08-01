@@ -6,5 +6,5 @@
     script.defer = true;
     document.head.appendChild(script);
   };
-  ['navigation.js', 'backend-config.js', 'public-api.js', 'assistant.js', 'booking.js', 'premium.js'].forEach(load);
+  ['navigation.js', 'backend-config.js', 'public-api.js', 'assistant.js', 'booking.js', 'patient-portal.js', 'premium.js'].forEach(load);
 })();

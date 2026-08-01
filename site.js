@@ -98,6 +98,7 @@
             <a data-nav="doctor" href="docteure.html">La docteure</a>
             <a data-nav="consultations" href="consultations.html">Consultations</a>
             <a data-nav="prevention" href="prevention.html">Prévention</a>
+            <a data-nav="patient" href="espace-patient.html">Espace patient</a>
             <a data-nav="locations" href="cabinets.html">Les cabinets</a>
           </nav>
           <a class="button coral nav-cta" href="rendez-vous.html">Prendre rendez-vous</a>
@@ -121,6 +122,7 @@
                 <a href="docteure.html">La docteure</a><br>
                 <a href="consultations.html">Consultations</a><br>
                 <a href="prevention.html">Prévention</a><br>
+                <a href="espace-patient.html">Espace patient</a><br>
                 <a href="cabinets.html">Les cabinets</a><br>
                 <a href="rendez-vous.html">Rendez-vous</a>
               </p>
@@ -162,12 +164,13 @@
         <div class="assistant-messages" id="assistant-messages" aria-live="polite" aria-label="Conversation avec l’assistant"></div>
         <div class="assistant-suggestions" aria-label="Questions suggérées">
           <button type="button" data-assistant-query="Prendre rendez-vous">Prendre rendez-vous</button>
-          <button type="button" data-assistant-query="Où se trouvent les cabinets ?">Accès aux cabinets</button>
-          <button type="button" data-assistant-query="Que dois-je apporter ?">Préparer ma venue</button>
+          <button type="button" data-assistant-query="Accéder à l’espace patient">Accéder à l’espace patient</button>
+          <button type="button" data-assistant-query="Trouver un cabinet">Trouver un cabinet</button>
+          <button type="button" data-assistant-query="Préparer ma consultation">Préparer ma consultation</button>
         </div>
         <form class="assistant-form" id="assistant-form">
           <label class="sr-only" for="assistant-input">Votre question</label>
-          <input id="assistant-input" name="question" type="text" autocomplete="off" maxlength="240" placeholder="Écrivez votre question pratique…" required>
+          <input id="assistant-input" name="question" type="text" autocomplete="off" maxlength="500" placeholder="Écrivez votre question pratique…" required>
           <button class="button dark" type="submit">Envoyer</button>
         </form>
       </section>

@@ -11,6 +11,8 @@
     const result = document.getElementById('booking-result');
     const submitButton = form.querySelector('[type="submit"]');
     let current = 1;
+    let inFlight = false;
+    const attempts = [];
     let submissionKey = window.CabinetLuciaApi?.createIdempotencyKey?.() || `booking-${Date.now()}`;
 
     const selectedSlot = () => form.querySelector('input[name="slot"]:checked');
@@ -75,6 +77,12 @@
 
       if (current === 2) {
         required(form.date, 'Choisissez une date souhaitée.', state);
+        const requestedAt = localDateTimeToIso(form.date.value, selectedSlot()?.value || '');
+        if (form.date.value && requestedAt && new Date(requestedAt).getTime() <= Date.now()) {
+          fieldError(form.date, 'Choisissez une date et une heure futures.');
+          state.first ||= form.date;
+          state.valid = false;
+        }
         if (!selectedSlot()) {
           const error = form.querySelector('.slot-choice-group .field-error');
           if (error) error.textContent = 'Choisissez un horaire souhaité.';
@@ -140,28 +148,49 @@
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
-      if (!validate()) return;
+      if (inFlight || !validate()) return;
 
+      if (form.website?.value) {
+        result.textContent = 'La demande n’a pas pu être transmise. Aucune confirmation n’a été enregistrée. Vous pouvez réessayer.';
+        result.focus();
+        return;
+      }
+
+      const now = Date.now();
+      attempts.splice(0, attempts.length, ...attempts.filter((attempt) => now - attempt < 60000));
+      if (attempts.length >= 3) {
+        result.textContent = 'Trop de tentatives rapprochées. Patientez une minute avant de réessayer. Aucune donnée n’a été transmise.';
+        result.focus();
+        return;
+      }
+      attempts.push(now);
+
+      inFlight = true;
       submitButton.disabled = true;
       result.textContent = '';
       const client = window.CabinetLuciaApi;
 
       if (!client || !client.getConfig().enabled) {
-        result.innerHTML = '<strong>Parcours de démonstration terminé.</strong><br>Aucune donnée n’a été transmise. La connexion au portail reste volontairement désactivée.';
+        result.textContent = 'La connexion au cabinet est prête mais n’est pas encore activée. Aucune donnée n’a été transmise.';
         result.focus();
+        inFlight = false;
         submitButton.disabled = false;
         return;
       }
 
       try {
         const response = await client.submitAppointmentRequest(payload(), submissionKey);
-        if (!response.enabled || !response.data?.requestId) throw new Error('Réponse de transmission invalide.');
-        result.innerHTML = '<strong>Votre demande a bien été transmise.</strong><br>Le secrétariat pourra la consulter et vous recontacter pour confirmer le rendez-vous.';
+        if (!response.enabled || response.data?.ok !== true || typeof response.data.requestId !== 'string' || !response.data.requestId.trim() || response.data.status !== 'RECEIVED' || typeof response.data.replay !== 'boolean') {
+          throw new Error('Réponse de transmission invalide.');
+        }
+        result.textContent = 'Votre demande a bien été transmise au cabinet. Elle sera examinée avant confirmation du rendez-vous.';
+        submissionKey = window.CabinetLuciaApi?.createIdempotencyKey?.() || `booking-${Date.now()}`;
         form.querySelectorAll('input, select, button').forEach((control) => { control.disabled = true; });
-      } catch (error) {
-        console.error('Échec de transmission de la demande de rendez-vous.', error);
-        result.innerHTML = '<strong>La demande n’a pas pu être transmise.</strong><br>Aucune confirmation n’a été créée. Réessayez plus tard ou contactez le secrétariat.';
+      } catch {
+        result.textContent = 'La demande n’a pas pu être transmise. Aucune confirmation n’a été enregistrée. Vous pouvez réessayer.';
         submitButton.disabled = false;
+      } finally {
+        inFlight = false;
       }
       result.focus();
     });

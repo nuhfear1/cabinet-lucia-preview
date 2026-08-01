@@ -28,6 +28,7 @@
         signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-store',
           'X-Request-Id': requestId(),
           ...(options.headers || {})
         }
