@@ -2,10 +2,10 @@
   'use strict';
 
   const defaults = {
-    enabled: false,
-    baseUrl: '',
+    enabled: true,
+    baseUrl: 'https://cabinet-lucia-medical-platform.osc-fr1.scalingo.io',
     timeoutMs: 8000,
-    environment: 'connection-ready',
+    environment: 'production',
     patientPortalUrl: ''
   };
   const configured = window.CABINET_LUCIA_BACKEND_CONFIG || defaults;
