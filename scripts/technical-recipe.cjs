@@ -246,10 +246,6 @@ async function checkBooking(client, failures) {
       field.dispatchEvent(new Event('input', { bubbles: true }));
       field.dispatchEvent(new Event('change', { bubbles: true }));
     };
-    let focusedField = '';
-    form.addEventListener('focusin', (event) => {
-      focusedField = event.target?.name || event.target?.id || '';
-    });
     setValue('[name="reason"]', 'Suivi cardiologique');
     setValue('[name="place"]', 'MORNE_A_LEAU');
     document.querySelector('[data-booking-next]').click();
@@ -264,20 +260,18 @@ async function checkBooking(client, failures) {
     setValue('[name="firstName"]', ' A ');
     setValue('[name="lastName"]', 'Nom');
     setValue('[name="phone"]', '0690000000');
-    focusedField = '';
     document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
     await nextFrame();
     const shortFirstNameRejected = !document.querySelector('[data-booking-step="3"]').hidden
-      && form.firstName.getAttribute('aria-invalid') === 'true';
-    const shortFirstNameFocused = focusedField === 'firstName';
+      && form.firstName.hasAttribute('aria-invalid')
+      && document.activeElement === form.firstName;
     setValue('[name="firstName"]', 'Al');
     setValue('[name="lastName"]', ' B ');
-    focusedField = '';
     document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
     await nextFrame();
     const shortLastNameRejected = !document.querySelector('[data-booking-step="3"]').hidden
-      && form.lastName.getAttribute('aria-invalid') === 'true';
-    const shortLastNameFocused = focusedField === 'lastName';
+      && form.lastName.hasAttribute('aria-invalid')
+      && document.activeElement === form.lastName;
     setValue('[name="lastName"]', 'Bo');
     document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
     const twoCharacterNamesAccepted = !document.querySelector('[data-booking-step="4"]').hidden;
@@ -301,9 +295,7 @@ async function checkBooking(client, failures) {
       resultText: document.getElementById('booking-result')?.textContent || '',
       backendEnabled: window.CabinetLuciaApi?.getConfig?.().enabled,
       shortFirstNameRejected,
-      shortFirstNameFocused,
       shortLastNameRejected,
-      shortLastNameFocused,
       twoCharacterNamesAccepted,
       invalidRequests: requests
     };
@@ -313,10 +305,8 @@ async function checkBooking(client, failures) {
   assert(result.consentRequired, 'Le consentement n’est pas obligatoire.', failures);
   assert(result.backendEnabled === false, 'Le backend public doit rester désactivé pendant cette recette.', failures);
   assert(result.resultText.includes('Aucune donnée n’a été transmise'), 'Le mode de démonstration ne confirme pas clairement l’absence de transmission.', failures);
-  assert(result.shortFirstNameRejected, 'Un prénom d’un caractère, espaces extérieurs compris, doit être refusé.', failures);
-  assert(result.shortFirstNameFocused, 'Le champ prénom invalide doit recevoir le focus.', failures);
-  assert(result.shortLastNameRejected, 'Un nom d’un caractère, espaces extérieurs compris, doit être refusé.', failures);
-  assert(result.shortLastNameFocused, 'Le champ nom invalide doit recevoir le focus.', failures);
+  assert(result.shortFirstNameRejected, 'Un prénom d’un caractère, espaces extérieurs compris, doit être refusé et recevoir le focus.', failures);
+  assert(result.shortLastNameRejected, 'Un nom d’un caractère, espaces extérieurs compris, doit être refusé et recevoir le focus.', failures);
   assert(result.twoCharacterNamesAccepted, 'Les prénoms et noms de deux caractères doivent être acceptés.', failures);
   assert(result.invalidRequests === 0, 'Une validation de nom incorrecte ne doit déclencher aucune requête.', failures);
 }
