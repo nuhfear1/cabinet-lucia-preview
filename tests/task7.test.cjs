@@ -33,10 +33,11 @@ function runScript(filename, overrides = {}) {
   return sandbox;
 }
 
-test('backend flag stays disabled by default', () => {
+test('production backend is activated with the Scalingo HTTPS URL', () => {
   const sandbox = runScript('backend-config.js');
-  assert.equal(sandbox.window.CABINET_LUCIA_BACKEND.enabled, false);
-  assert.equal(sandbox.window.CABINET_LUCIA_BACKEND.baseUrl, '');
+  assert.equal(sandbox.window.CABINET_LUCIA_BACKEND.enabled, true);
+  assert.equal(sandbox.window.CABINET_LUCIA_BACKEND.environment, 'production');
+  assert.equal(sandbox.window.CABINET_LUCIA_BACKEND.baseUrl, 'https://cabinet-lucia-medical-platform.osc-fr1.scalingo.io');
 });
 
 test('backend flag rejects non-HTTPS activation', () => {
@@ -71,7 +72,7 @@ test('rollback mode performs no network request', async () => {
   assert.equal(calls, 0);
 });
 
-test('assistant uses the canonical endpoint without credentials', async () => {
+test('assistant uses the canonical endpoint without credentials or forbidden CORS headers', async () => {
   let request;
   const sandbox = runScript('public-api.js', {
     window: { CABINET_LUCIA_BACKEND: { enabled: true, baseUrl: 'https://backend.example.test', timeoutMs: 1000 } },
@@ -85,8 +86,22 @@ test('assistant uses the canonical endpoint without credentials', async () => {
   assert.equal(request.url, 'https://backend.example.test/api/public/assistant');
   assert.equal(request.options.credentials, 'omit');
   assert.equal(request.options.cache, 'no-store');
-  assert.equal(request.options.headers['Cache-Control'], 'no-store');
+  assert.equal(request.options.headers['Cache-Control'], undefined);
   assert.deepEqual(JSON.parse(request.options.body), { question: 'Question pratique' });
+});
+
+test('public config uses the canonical GET endpoint', async () => {
+  let request;
+  const sandbox = runScript('public-api.js', {
+    window: { CABINET_LUCIA_BACKEND: { enabled: true, baseUrl: 'https://backend.example.test', timeoutMs: 1000 } },
+    fetch: async (url, options) => {
+      request = { url, options };
+      return { ok: true, json: async () => ({ profile: null, rules: [] }) };
+    }
+  });
+  await sandbox.window.CabinetLuciaApi.getPublicConfig();
+  assert.equal(request.url, 'https://backend.example.test/api/public/config');
+  assert.equal(request.options.method, 'GET');
 });
 
 test('appointment request sends the exact idempotency key and payload', async () => {
@@ -159,11 +174,20 @@ test('patient space exposes only local resources and keeps the portal hidden', (
   assert.match(html, /id="patient-portal-link" href="" hidden/);
 });
 
-test('integration scripts load before assistant and booking', () => {
+test('integration scripts load sequentially before consumers', () => {
   const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
   const config = source.indexOf("'backend-config.js'");
   const client = source.indexOf("'public-api.js'");
+  const publicConfig = source.indexOf("'public-config.js'");
   const assistant = source.indexOf("'assistant.js'");
   const booking = source.indexOf("'booking.js'");
-  assert.ok(config >= 0 && client > config && assistant > client && booking > client);
+  assert.match(source, /for \(const src of ordered\) await load\(src\)/);
+  assert.ok(config >= 0 && client > config && publicConfig > client && assistant > publicConfig && booking > publicConfig);
+});
+
+test('public config hydrator consumes backend profile and rules', () => {
+  const source = fs.readFileSync(path.join(root, 'public-config.js'), 'utf8');
+  assert.match(source, /client\.getPublicConfig\(\)/);
+  assert.match(source, /CABINET_LUCIA_PUBLIC_PROFILE/);
+  assert.match(source, /CABINET_LUCIA_PUBLIC_RULES/);
 });
