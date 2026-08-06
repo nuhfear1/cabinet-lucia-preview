@@ -10,6 +10,7 @@ const required = [
   'app.js',
   'backend-config.js',
   'public-api.js',
+  'public-config.js',
   'assistant.js',
   'booking.js',
   'patient-portal.js',
@@ -30,11 +31,12 @@ for (const forbidden of ['localhost', 'example', '.invalid']) {
 }
 
 const api = fs.readFileSync(path.join(root, 'public-api.js'), 'utf8');
-for (const endpoint of ['/api/public/assistant', '/api/public/appointment-requests']) {
+for (const endpoint of ['/api/public/config', '/api/public/assistant', '/api/public/appointment-requests']) {
   if (!api.includes(endpoint)) throw new Error(`Endpoint public manquant: ${endpoint}`);
 }
 if (!api.includes("credentials: 'omit'")) throw new Error('Les requêtes publiques ne doivent envoyer aucun cookie privé.');
-if (!api.includes("'Cache-Control': 'no-store'")) throw new Error('Le cache des requêtes publiques doit être interdit.');
+if (!api.includes("cache: 'no-store'")) throw new Error('Le cache navigateur des requêtes publiques doit être interdit.');
+if (api.includes("'Cache-Control': 'no-store'")) throw new Error('L’en-tête Cache-Control de requête est interdit par le contrat CORS.');
 if (!api.includes("'Idempotency-Key'")) throw new Error('La clé d’idempotence rendez-vous est absente.');
 
 const booking = fs.readFileSync(path.join(root, 'booking.js'), 'utf8');

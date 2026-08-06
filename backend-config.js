@@ -2,10 +2,10 @@
   'use strict';
 
   const defaults = {
-    enabled: false,
-    baseUrl: '',
+    enabled: true,
+    baseUrl: 'https://cabinet-lucia-medical-platform.osc-fr1.scalingo.io',
     timeoutMs: 8000,
-    environment: 'connection-ready',
+    environment: 'production',
     patientPortalUrl: ''
   };
   const configured = window.CABINET_LUCIA_BACKEND_CONFIG || defaults;
@@ -30,9 +30,10 @@
   const patientPortalUrl = normalizeUrl(configured.patientPortalUrl);
   const environment = typeof configured.environment === 'string' ? configured.environment : defaults.environment;
   const activeEnvironment = environment === 'production' || environment === 'staging';
+  const securePageOrigin = typeof location === 'undefined' || location.protocol === 'https:';
 
   window.CABINET_LUCIA_BACKEND = Object.freeze({
-    enabled: configured.enabled === true && activeEnvironment && isSafeHttpsUrl(baseUrl),
+    enabled: configured.enabled === true && activeEnvironment && securePageOrigin && isSafeHttpsUrl(baseUrl),
     baseUrl: isSafeHttpsUrl(baseUrl) ? baseUrl : '',
     timeoutMs: Number.isFinite(configured.timeoutMs) ? Math.min(Math.max(configured.timeoutMs, 1000), 15000) : defaults.timeoutMs,
     environment,

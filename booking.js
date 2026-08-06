@@ -125,7 +125,7 @@
         state.valid = false;
       }
 
-      if (!state.valid) state.first?.focus();
+      if (!state.valid) requestAnimationFrame(() => state.first?.focus({ preventScroll: true }));
       return state.valid;
     };
 

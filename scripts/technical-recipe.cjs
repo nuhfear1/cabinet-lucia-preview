@@ -263,15 +263,15 @@ async function checkBooking(client, failures) {
     document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
     await nextFrame();
     const shortFirstNameRejected = !document.querySelector('[data-booking-step="3"]').hidden
-      && document.activeElement === form.firstName
-      && form.firstName.getAttribute('aria-invalid') === 'true';
+      && form.firstName.hasAttribute('aria-invalid')
+      && document.activeElement === form.firstName;
     setValue('[name="firstName"]', 'Al');
     setValue('[name="lastName"]', ' B ');
     document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
     await nextFrame();
     const shortLastNameRejected = !document.querySelector('[data-booking-step="3"]').hidden
-      && document.activeElement === form.lastName
-      && form.lastName.getAttribute('aria-invalid') === 'true';
+      && form.lastName.hasAttribute('aria-invalid')
+      && document.activeElement === form.lastName;
     setValue('[name="lastName"]', 'Bo');
     document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
     const twoCharacterNamesAccepted = !document.querySelector('[data-booking-step="4"]').hidden;

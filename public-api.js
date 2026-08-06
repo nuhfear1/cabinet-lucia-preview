@@ -28,7 +28,6 @@
         signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
-          'Cache-Control': 'no-store',
           'X-Request-Id': requestId(),
           ...(options.headers || {})
         }
@@ -46,6 +45,8 @@
       clearTimeout(timeout);
     }
   };
+
+  api.getPublicConfig = async () => request('/api/public/config', { method: 'GET' });
 
   api.askAssistant = async (question) => request('/api/public/assistant', {
     method: 'POST',
