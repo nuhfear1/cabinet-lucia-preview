@@ -30,12 +30,31 @@
     }));
 
     let ticking = false;
+    let scrollRange = 1;
+    let lastProgress = -1;
+    let headerScrolled = null;
+    let backToTopVisible = null;
+    const measureScrollRange = () => {
+      scrollRange = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    };
     const updateScrollUi = () => {
       const top = window.scrollY || document.documentElement.scrollTop;
-      const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-      if (progressBar) progressBar.style.transform = `scaleX(${Math.min(1, top / max)})`;
-      header?.classList.toggle('is-scrolled', top > 18);
-      backToTop.classList.toggle('is-visible', top > 560);
+      const progressValue = Math.min(1, top / scrollRange);
+      const isHeaderScrolled = top > 18;
+      const isBackToTopVisible = top > 560;
+
+      if (progressBar && Math.abs(progressValue - lastProgress) > 0.0005) {
+        progressBar.style.transform = `scaleX(${progressValue})`;
+        lastProgress = progressValue;
+      }
+      if (headerScrolled !== isHeaderScrolled) {
+        header?.classList.toggle('is-scrolled', isHeaderScrolled);
+        headerScrolled = isHeaderScrolled;
+      }
+      if (backToTopVisible !== isBackToTopVisible) {
+        backToTop.classList.toggle('is-visible', isBackToTopVisible);
+        backToTopVisible = isBackToTopVisible;
+      }
       ticking = false;
     };
     const requestScrollUi = () => {
@@ -44,7 +63,13 @@
       requestAnimationFrame(updateScrollUi);
     };
     window.addEventListener('scroll', requestScrollUi, { passive: true });
-    window.addEventListener('resize', requestScrollUi, { passive: true });
+    const refreshScrollMetrics = () => {
+      measureScrollRange();
+      requestScrollUi();
+    };
+    window.addEventListener('resize', refreshScrollMetrics, { passive: true });
+    window.addEventListener('load', refreshScrollMetrics, { once: true });
+    measureScrollRange();
     updateScrollUi();
 
     const revealTargets = [
@@ -67,6 +92,17 @@
       }, { threshold: 0.1, rootMargin: '0px 0px -8% 0px' });
       revealTargets.forEach((node) => observer.observe(node));
     }
+
+    const animatedRegions = document.querySelectorAll('.hero, .page-hero');
+    if (!reducedMotion && 'IntersectionObserver' in window) {
+      const animationObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => entry.target.classList.toggle('decorations-paused', !entry.isIntersecting));
+      });
+      animatedRegions.forEach((region) => animationObserver.observe(region));
+    }
+    document.addEventListener('visibilitychange', () => {
+      document.documentElement.classList.toggle('page-hidden', document.hidden);
+    });
 
     const heroVisual = document.querySelector('.hero .visual');
     const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;

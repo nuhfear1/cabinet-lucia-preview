@@ -32,3 +32,15 @@ footer{position:relative;overflow:hidden;background:linear-gradient(145deg,#0525
 @media(max-width:900px){.links{left:18px!important;right:18px!important;top:76px!important;gap:5px!important;padding:12px!important;border-radius:22px!important;background:rgba(255,255,255,.96)!important;box-shadow:0 24px 70px rgba(3,31,38,.2)!important;backdrop-filter:blur(20px)}.links a{padding:13px 15px!important;border-radius:14px!important}.hero{min-height:auto;padding-top:72px!important}.visual{transform:none}.section{padding:88px 0!important}}
 @media(max-width:620px){html{scroll-padding-top:84px}.site-header.is-scrolled .nav,header.is-scrolled .nav{height:64px}.hero{padding:62px 0 60px!important}.hero h1{font-size:clamp(2.55rem,12vw,3.45rem)!important}.section{padding:72px 0!important}.page-hero{padding:68px 0 58px!important}.appointment{padding:16px!important}.card{padding:24px!important}.back-to-top{right:14px;bottom:78px;width:42px;height:42px}}
 @media(prefers-reduced-motion:reduce){.floating,.image-placeholder::before{animation:none!important}[data-premium-reveal]{opacity:1!important;transform:none!important;transition:none!important}.visual,.visual:hover{transform:none!important}}
+
+/* Scroll-performance safeguards for purely decorative motion. */
+.hero.decorations-paused .floating,
+.page-hero.decorations-paused .image-placeholder::before,
+.page-hidden .floating,
+.page-hidden .image-placeholder::before,
+.page-hidden .ambient-dot{animation-play-state:paused!important}
+.ambient-dot{animation:none!important}
+@media (hover:none),(pointer:coarse){
+  .ambient-dot{display:none}
+  .floating,.image-placeholder::before{animation:none!important}
+}
