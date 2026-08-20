@@ -1,47 +1,31 @@
 # Checklist de connexion finale
 
-La connexion reste volontairement désactivée jusqu'à la fourniture et à la validation de l'infrastructure. N'utiliser aucune donnée patient réelle pendant la recette.
+Le backend de production et le site public sont désormais connectés. PostgreSQL de production est configuré, HTTPS et CORS ont été testés, et un test fictif du parcours public → API → base de données a réussi. **Aucune donnée patient réelle ne doit être utilisée en recette.**
 
-## Backend
+## Éléments validés
 
-- [ ] Renseigner `DATABASE_URL` avec la base PostgreSQL définitive.
-- [ ] Renseigner `SESSION_SECRET` via le gestionnaire de secrets de l'hébergeur.
-- [ ] Renseigner `PUBLIC_SITE_ORIGINS` et `PORTAL_ORIGINS` avec les origines HTTPS exactes.
-- [ ] Régler `POSTGRES_TLS=require` et valider la chaîne de confiance TLS.
-- [ ] Déployer la plateforme médicale sans modifier les routes publiques canoniques.
-- [ ] Exécuter les migrations existantes sur la base cible selon le runbook de la plateforme.
-- [ ] Vérifier `GET /api/health`.
-- [ ] Vérifier `GET /api/readiness`.
+- [x] Backend de production connecté.
+- [x] PostgreSQL de production configuré.
+- [x] Connexions HTTPS et politique CORS testées.
+- [x] Site public connecté au backend.
+- [x] Test avec des données fictives du site public vers l’API puis la base de données réussi.
 
-La limitation d'interface du formulaire complète, mais ne remplace jamais, la limitation de débit et les protections anti-abus côté serveur.
+## Contrôles d’exploitation à maintenir
 
-## Site public
+- [ ] Surveiller `GET /api/health` et `GET /api/readiness` en exploitation.
+- [ ] Vérifier après chaque déploiement la réception et l’audit d’une demande strictement fictive dans le portail médecin/secrétariat.
+- [ ] Conserver les secrets et URL de production dans les mécanismes de configuration prévus, sans les documenter ici.
 
-- [ ] Renseigner l'URL HTTPS définitive du backend dans `baseUrl`.
-- [ ] Renseigner éventuellement l'URL HTTPS du portail patient dans `patientPortalUrl` (ne jamais utiliser le portail professionnel à sa place).
-- [ ] Conserver `enabled: false` et tester le formulaire, le message de non-transmission et l'assistant local.
-- [ ] Effectuer un test fictif autorisé après déploiement du backend et vérifier CORS, le contrat et l'idempotence.
-- [ ] Définir explicitement `environment: "staging"` ou `environment: "production"`, puis passer `enabled: true`.
-- [ ] Redéployer le site public.
-- [ ] Vérifier la réception et l'audit de la demande dans le portail médecin/secrétariat.
+La limitation d’interface du formulaire complète, mais ne remplace jamais, la limitation de débit et les protections anti-abus côté serveur.
+
+## Recette
+
+- Utiliser exclusivement des identités et informations fictives.
+- Ne jamais saisir de donnée patient réelle dans les tests du formulaire, de l’API, de la base de données ou du portail.
+- Ne marquer un nouveau contrôle comme validé qu’après l’avoir réellement exécuté dans l’environnement concerné.
 
 ## Rollback
 
-- [ ] Remettre `enabled: false` sans vider ni remplacer les URL de production dans une opération d'urgence.
-- [ ] Republier le site public.
-- [ ] Vérifier que le chatbot local répond sans requête backend.
-- [ ] Vérifier qu'aucune nouvelle demande de rendez-vous n'est envoyée.
-
-## Valeurs indispensables restant à fournir
-
-```text
-BACKEND_PUBLIC_URL=
-PUBLIC_SITE_URL=
-PORTAL_URL=
-DATABASE_URL=
-SESSION_SECRET=
-POSTGRES_TLS=
-PUBLIC_SITE_ORIGINS=
-PORTAL_ORIGINS=
-COOKIE_SECURE=
-```
+- [ ] Appliquer le runbook de rollback sans vider ni remplacer les URL de production.
+- [ ] Republier le site public si sa configuration doit être restaurée.
+- [ ] Vérifier qu’aucune demande inattendue n’est transmise pendant l’intervention.
