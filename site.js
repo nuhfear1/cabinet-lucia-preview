@@ -179,7 +179,7 @@
           <button type="button" class="assistant-close" id="close-assistant" aria-label="Fermer l’assistant">✕</button>
         </div>
         <p id="assistant-description" class="assistant-description">Je réponds uniquement aux questions pratiques déjà documentées sur le site.</p>
-        <div class="notice" role="note"><strong>Urgence médicale :</strong> contactez immédiatement les services d’urgence. Cet assistant ne délivre aucun avis médical.</div>
+        <div class="notice" role="note"><strong>Urgence médicale :</strong> contactez immédiatement les services d’urgence. Cet assistant ne délivre aucun avis médical. N’indiquez pas de résultat d’examen, compte rendu, ordonnance, numéro de dossier ou autre information médicale personnelle.</div>
         <div class="assistant-messages" id="assistant-messages" aria-live="polite" aria-label="Conversation avec l’assistant"></div>
         <div class="assistant-suggestions" aria-label="Questions suggérées">
           <button type="button" data-assistant-query="Prendre rendez-vous">Prendre rendez-vous</button>
