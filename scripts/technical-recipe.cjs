@@ -1,7 +1,5 @@
 const fs = require('node:fs');
-const os = require('node:os');
-const path = require('node:path');
-const { spawn, execFileSync } = require('node:child_process');
+const { cleanupChrome, createCdpTarget, launchChrome } = require('./chrome-launcher.cjs');
 
 const baseUrl = process.env.PUBLIC_SITE_URL || 'http://127.0.0.1:4173';
 const reportPath = process.env.TECHNICAL_RECIPE_REPORT || '/tmp/public-technical-recipe.json';
@@ -25,39 +23,6 @@ const viewports = [
 
 function assert(condition, message, failures) {
   if (!condition) failures.push(message);
-}
-
-function findChrome() {
-  const candidates = [
-    process.env.CHROME_PATH,
-    '/usr/bin/google-chrome-stable',
-    '/usr/bin/google-chrome',
-    '/usr/bin/chromium',
-    '/usr/bin/chromium-browser'
-  ].filter(Boolean);
-  for (const candidate of candidates) if (fs.existsSync(candidate)) return candidate;
-  for (const command of ['google-chrome-stable', 'google-chrome', 'chromium', 'chromium-browser']) {
-    try {
-      const resolved = execFileSync('which', [command], { encoding: 'utf8' }).trim();
-      if (resolved) return resolved;
-    } catch {}
-  }
-  throw new Error('Navigateur Chromium introuvable sur le système de recette.');
-}
-
-async function waitForJson(url, timeoutMs = 20000) {
-  const deadline = Date.now() + timeoutMs;
-  let lastError;
-  while (Date.now() < deadline) {
-    try {
-      const response = await fetch(url);
-      if (response.ok) return response.json();
-    } catch (error) {
-      lastError = error;
-    }
-    await new Promise((resolve) => setTimeout(resolve, 200));
-  }
-  throw lastError || new Error(`Délai dépassé pour ${url}`);
 }
 
 class CdpClient {
@@ -316,24 +281,14 @@ async function main() {
   const results = [];
   const browserErrors = [];
   const badResponses = [];
-  const chromePath = findChrome();
-  const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cabinet-lucia-chrome-'));
-  const chrome = spawn(chromePath, [
-    '--headless=new',
-    '--no-sandbox',
-    '--disable-dev-shm-usage',
-    '--disable-gpu',
-    '--hide-scrollbars',
-    '--remote-debugging-port=9222',
-    `--user-data-dir=${userDataDir}`,
-    'about:blank'
-  ], { stdio: ['ignore', 'pipe', 'pipe'] });
+  const launched = await launchChrome();
+  const { binary: chromePath, browserVersion, diagnostics } = launched;
+  if (diagnostics.length) {
+    console.warn(`Chrome fallback diagnostics:\n\n${diagnostics.join('\n\n--- next candidate ---\n\n')}`);
+  }
 
   try {
-    await waitForJson('http://127.0.0.1:9222/json/version');
-    const targetResponse = await fetch('http://127.0.0.1:9222/json/new?about:blank', { method: 'PUT' });
-    if (!targetResponse.ok) throw new Error('Impossible de créer l’onglet de recette.');
-    const target = await targetResponse.json();
+    const target = await createCdpTarget(launched);
     const client = await connectCdp(target.webSocketDebuggerUrl);
     await client.send('Page.enable');
     await client.send('Runtime.enable');
@@ -373,14 +328,15 @@ async function main() {
     for (const error of [...new Set(browserErrors)]) failures.push(`Erreur JavaScript navigateur : ${error}`);
     for (const response of [...new Set(badResponses)]) failures.push(`Ressource interne indisponible : ${response}`);
   } finally {
-    chrome.kill('SIGTERM');
-    fs.rmSync(userDataDir, { recursive: true, force: true });
+    await cleanupChrome(launched);
   }
 
   const report = {
     generatedAt: new Date().toISOString(),
     baseUrl,
     browser: chromePath,
+    browserVersion,
+    browserLaunchDiagnostics: diagnostics,
     pages,
     viewports,
     results,
