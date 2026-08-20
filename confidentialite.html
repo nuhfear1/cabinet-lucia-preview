@@ -82,11 +82,13 @@
         <p>Certains prestataires internationaux, notamment GitHub et OpenAI lorsque ce dernier est utilisé, peuvent impliquer un traitement de données hors de l’Espace économique européen. Ces transferts doivent reposer sur les mécanismes prévus par la réglementation applicable, notamment une décision d’adéquation ou des clauses contractuelles types, selon le prestataire et le traitement concerné.</p>
 
         <h2>Durées de conservation</h2>
-        <h3>Demandes non transformées en prise en charge</h3>
-        <p>La politique retenue par le cabinet est une conservation maximale de trois mois après la date de rendez-vous demandée ou, si elle est postérieure, après le dernier traitement nécessaire de la demande. Cette politique de suppression doit être mise en œuvre et vérifiée avant l’ouverture définitive du service.</p>
-        <!-- TODO BACKEND RETENTION: implémenter et vérifier la purge des demandes publiques non converties. -->
-        <h3>Demandes intégrées à une prise en charge</h3>
-        <p>Les données nécessaires intégrées au dossier patient relèvent ensuite des règles de conservation applicables au cabinet médical, avec une conservation pouvant aller jusqu’à 20 ans à compter de la dernière prise en charge et une distinction entre conservation active et archivage lorsqu’elle s’applique. Cette durée n’est pas celle de la simple demande web.</p>
+        <h3>Patients et continuité de la prise en charge</h3>
+        <p>Les données nécessaires à la gestion du patient et à la continuité de sa prise en charge sont conservées pendant 5 ans en base active à compter de la dernière intervention sur le dossier, puis pendant 15 ans en archivage intermédiaire. Le cycle de conservation peut ainsi atteindre 20 ans à compter de la dernière prise en charge.</p>
+        <p>Lorsqu’une nouvelle intervention est effectuée sur le dossier, la période de conservation de 5 ans en base active s’apprécie à nouveau à partir de cette dernière intervention. Cette conservation permet d’assurer la continuité du suivi médical.</p>
+        <!-- TODO ARCHIVAGE: vérifier / implémenter le passage de la base active à l’archivage intermédiaire à l’échéance de 5 ans. -->
+        <h3>Demandes publiques de rendez-vous</h3>
+        <p>Les demandes de rendez-vous qui n’aboutissent pas à une prise en charge sont conservées uniquement pendant la durée nécessaire à leur traitement et aux obligations légitimes du cabinet.</p>
+        <p>Dès que les données d’une demande sont intégrées au dossier patient ou deviennent nécessaires à la prise en charge, elles font partie du parcours patient et relèvent du cycle de conservation applicable à celui-ci&nbsp;: 5 ans en base active à compter de la dernière intervention sur le dossier, puis 15 ans en archivage intermédiaire.</p>
         <h3>Assistant</h3>
         <p>Les événements applicatifs de l’assistant sont conservés pendant une durée limitée, destinée à la sécurité, au contrôle et à l’amélioration du fonctionnement.</p>
         <!-- TODO BACKEND RETENTION: formaliser/automatiser la politique de purge des événements assistant. -->
