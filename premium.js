@@ -11,13 +11,6 @@
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const header = document.querySelector('.site-header, header');
 
-    const progress = document.createElement('div');
-    progress.className = 'scroll-progress';
-    progress.setAttribute('aria-hidden', 'true');
-    progress.innerHTML = '<span class="scroll-progress__bar"></span>';
-    document.body.prepend(progress);
-    const progressBar = progress.firstElementChild;
-
     const backToTop = document.createElement('button');
     backToTop.type = 'button';
     backToTop.className = 'back-to-top';
@@ -30,23 +23,13 @@
     }));
 
     let ticking = false;
-    let scrollRange = 1;
-    let lastProgress = -1;
     let headerScrolled = null;
     let backToTopVisible = null;
-    const measureScrollRange = () => {
-      scrollRange = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-    };
     const updateScrollUi = () => {
-      const top = window.scrollY || document.documentElement.scrollTop;
-      const progressValue = Math.min(1, top / scrollRange);
+      const top = window.scrollY;
       const isHeaderScrolled = top > 18;
       const isBackToTopVisible = top > 560;
 
-      if (progressBar && Math.abs(progressValue - lastProgress) > 0.0005) {
-        progressBar.style.transform = `scaleX(${progressValue})`;
-        lastProgress = progressValue;
-      }
       if (headerScrolled !== isHeaderScrolled) {
         header?.classList.toggle('is-scrolled', isHeaderScrolled);
         headerScrolled = isHeaderScrolled;
@@ -63,46 +46,7 @@
       requestAnimationFrame(updateScrollUi);
     };
     window.addEventListener('scroll', requestScrollUi, { passive: true });
-    const refreshScrollMetrics = () => {
-      measureScrollRange();
-      requestScrollUi();
-    };
-    window.addEventListener('resize', refreshScrollMetrics, { passive: true });
-    window.addEventListener('load', refreshScrollMetrics, { once: true });
-    measureScrollRange();
     updateScrollUi();
-
-    const revealTargets = [
-      ...document.querySelectorAll('main .heading, main .card, main .location, main .appointment, main .media, main .panel, main .page-card, main .value-card, main details, main .dark-panel')
-    ];
-    revealTargets.forEach((node, index) => {
-      node.dataset.premiumReveal = index % 7 === 2 ? 'left' : index % 7 === 5 ? 'right' : 'up';
-      node.style.setProperty('--reveal-delay', `${Math.min(index % 4, 3) * 70}ms`);
-    });
-
-    if (reducedMotion || !('IntersectionObserver' in window)) {
-      revealTargets.forEach((node) => node.classList.add('is-visible'));
-    } else {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add('is-visible');
-          observer.unobserve(entry.target);
-        });
-      }, { threshold: 0.1, rootMargin: '0px 0px -8% 0px' });
-      revealTargets.forEach((node) => observer.observe(node));
-    }
-
-    const animatedRegions = document.querySelectorAll('.hero, .page-hero');
-    if (!reducedMotion && 'IntersectionObserver' in window) {
-      const animationObserver = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => entry.target.classList.toggle('decorations-paused', !entry.isIntersecting));
-      });
-      animatedRegions.forEach((region) => animationObserver.observe(region));
-    }
-    document.addEventListener('visibilitychange', () => {
-      document.documentElement.classList.toggle('page-hidden', document.hidden);
-    });
 
     const heroVisual = document.querySelector('.hero .visual');
     const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;

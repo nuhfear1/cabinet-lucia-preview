@@ -36,6 +36,16 @@ jobs:
           curl -fsS http://127.0.0.1:4173/rendez-vous.html | grep -q 'Transmettre la demande'
           curl -fsS http://127.0.0.1:4173/backend-config.js | grep -q 'CABINET_LUCIA_BACKEND'
           curl -fsS http://127.0.0.1:4173/public-api.js | grep -q '/api/public/appointment-requests'
+      - name: Browser availability diagnostics
+        run: |
+          which google-chrome-stable || true
+          which google-chrome || true
+          which chromium || true
+          which chromium-browser || true
+          google-chrome-stable --version || true
+          google-chrome --version || true
+          chromium --version || true
+          chromium-browser --version || true
       - name: Browser technical recipe
         shell: bash
         run: |
