@@ -27,37 +27,141 @@ function assert(condition, message, failures) {
   if (!condition) failures.push(message);
 }
 
-function findChrome() {
-  const candidates = [
-    process.env.CHROME_PATH,
+function findChromeCandidates() {
+  const configured = process.env.CHROME_PATH ? [process.env.CHROME_PATH] : [];
+  const commands = ['google-chrome-stable', 'google-chrome', 'chromium', 'chromium-browser'];
+  const candidates = [...configured];
+  for (const command of commands) {
+    try {
+      const resolved = execFileSync('sh', ['-c', 'command -v "$1"', 'resolve-chrome', command], {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore']
+      }).trim();
+      if (resolved) candidates.push(resolved);
+    } catch {}
+  }
+  candidates.push(
     '/usr/bin/google-chrome-stable',
     '/usr/bin/google-chrome',
     '/usr/bin/chromium',
     '/usr/bin/chromium-browser'
-  ].filter(Boolean);
-  for (const candidate of candidates) if (fs.existsSync(candidate)) return candidate;
-  for (const command of ['google-chrome-stable', 'google-chrome', 'chromium', 'chromium-browser']) {
-    try {
-      const resolved = execFileSync('which', [command], { encoding: 'utf8' }).trim();
-      if (resolved) return resolved;
-    } catch {}
+  );
+
+  const unique = new Map();
+  for (const candidate of candidates) {
+    if (!fs.existsSync(candidate)) continue;
+    const resolved = fs.realpathSync(candidate);
+    if (!unique.has(resolved)) unique.set(resolved, candidate);
   }
-  throw new Error('Navigateur Chromium introuvable sur le système de recette.');
+  return [...unique.values()];
 }
 
-async function waitForJson(url, timeoutMs = 20000) {
+function appendLimited(current, chunk, limit = 32768) {
+  const combined = current + chunk.toString();
+  return combined.length > limit ? combined.slice(-limit) : combined;
+}
+
+function formatChromeFailure({ binary, exitCode, signal, stdout, stderr, error }) {
+  return [
+    'Chrome exited before CDP became ready',
+    `binary: ${binary}`,
+    `exitCode: ${exitCode ?? 'none'}`,
+    `signal: ${signal ?? 'none'}`,
+    error ? `launcherError: ${error.message || error}` : null,
+    `stderr:\n${stderr.trim() || '(empty)'}`,
+    `stdout:\n${stdout.trim() || '(empty)'}`
+  ].filter(Boolean).join('\n');
+}
+
+async function stopChrome(chrome) {
+  if (chrome.exitCode !== null || chrome.signalCode !== null) return;
+  chrome.kill('SIGTERM');
+  await Promise.race([
+    new Promise((resolve) => chrome.once('close', resolve)),
+    new Promise((resolve) => setTimeout(resolve, 2000))
+  ]);
+  if (chrome.exitCode === null && chrome.signalCode === null) chrome.kill('SIGKILL');
+}
+
+async function waitForChromeCdp(chrome, binary, userDataDir, output, timeoutMs = 20000) {
   const deadline = Date.now() + timeoutMs;
   let lastError;
+  let port;
   while (Date.now() < deadline) {
+    if (output.exited) throw new Error(formatChromeFailure({ binary, ...output }));
+
     try {
-      const response = await fetch(url);
-      if (response.ok) return response.json();
+      if (!port) {
+        const activePort = fs.readFileSync(path.join(userDataDir, 'DevToolsActivePort'), 'utf8');
+        const parsedPort = Number.parseInt(activePort.split(/\r?\n/, 1)[0], 10);
+        if (!Number.isInteger(parsedPort) || parsedPort <= 0) throw new Error('DevToolsActivePort invalide.');
+        port = parsedPort;
+      }
+      const response = await fetch(`http://127.0.0.1:${port}/json/version`);
+      if (response.ok) return { port, version: await response.json() };
+      lastError = new Error(`CDP a répondu HTTP ${response.status}.`);
     } catch (error) {
       lastError = error;
     }
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
-  throw lastError || new Error(`Délai dépassé pour ${url}`);
+  throw new Error([
+    `Chrome did not expose CDP within ${timeoutMs}ms`,
+    `binary: ${binary}`,
+    `lastError: ${lastError?.message || 'none'}`,
+    `stderr:\n${output.stderr.trim() || '(empty)'}`,
+    `stdout:\n${output.stdout.trim() || '(empty)'}`
+  ].join('\n'));
+}
+
+async function launchChrome() {
+  const candidates = findChromeCandidates();
+  if (!candidates.length) throw new Error('Navigateur Chromium introuvable sur le système de recette.');
+
+  const diagnostics = [];
+  for (const binary of candidates) {
+    const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cabinet-lucia-chrome-'));
+    const output = { stdout: '', stderr: '', exited: false, exitCode: null, signal: null, error: null };
+    const chrome = spawn(binary, [
+      '--headless',
+      '--no-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--no-first-run',
+      '--no-default-browser-check',
+      '--remote-debugging-address=127.0.0.1',
+      '--remote-debugging-port=0',
+      `--user-data-dir=${userDataDir}`,
+      'about:blank'
+    ], { stdio: ['ignore', 'pipe', 'pipe'] });
+
+    chrome.stdout.on('data', (chunk) => { output.stdout = appendLimited(output.stdout, chunk); });
+    chrome.stderr.on('data', (chunk) => { output.stderr = appendLimited(output.stderr, chunk); });
+    chrome.once('error', (error) => { output.error = error; output.exited = true; });
+    chrome.once('exit', (exitCode, signal) => {
+      output.exitCode = exitCode;
+      output.signal = signal;
+      output.exited = true;
+    });
+
+    try {
+      const cdp = await waitForChromeCdp(chrome, binary, userDataDir, output);
+      return {
+        binary,
+        browserVersion: cdp.version.Browser || 'unknown',
+        chrome,
+        userDataDir,
+        port: cdp.port,
+        diagnostics
+      };
+    } catch (error) {
+      diagnostics.push(error.message || String(error));
+      await stopChrome(chrome);
+      fs.rmSync(userDataDir, { recursive: true, force: true });
+    }
+  }
+
+  throw new Error(`Aucun navigateur Chromium n’a pu démarrer :\n\n${diagnostics.join('\n\n--- next candidate ---\n\n')}`);
 }
 
 class CdpClient {
@@ -316,22 +420,14 @@ async function main() {
   const results = [];
   const browserErrors = [];
   const badResponses = [];
-  const chromePath = findChrome();
-  const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cabinet-lucia-chrome-'));
-  const chrome = spawn(chromePath, [
-    '--headless=new',
-    '--no-sandbox',
-    '--disable-dev-shm-usage',
-    '--disable-gpu',
-    '--hide-scrollbars',
-    '--remote-debugging-port=9222',
-    `--user-data-dir=${userDataDir}`,
-    'about:blank'
-  ], { stdio: ['ignore', 'pipe', 'pipe'] });
+  const launched = await launchChrome();
+  const { binary: chromePath, browserVersion, chrome, userDataDir, port, diagnostics } = launched;
+  if (diagnostics.length) {
+    console.warn(`Chrome fallback diagnostics:\n\n${diagnostics.join('\n\n--- next candidate ---\n\n')}`);
+  }
 
   try {
-    await waitForJson('http://127.0.0.1:9222/json/version');
-    const targetResponse = await fetch('http://127.0.0.1:9222/json/new?about:blank', { method: 'PUT' });
+    const targetResponse = await fetch(`http://127.0.0.1:${port}/json/new?about:blank`, { method: 'PUT' });
     if (!targetResponse.ok) throw new Error('Impossible de créer l’onglet de recette.');
     const target = await targetResponse.json();
     const client = await connectCdp(target.webSocketDebuggerUrl);
@@ -373,7 +469,7 @@ async function main() {
     for (const error of [...new Set(browserErrors)]) failures.push(`Erreur JavaScript navigateur : ${error}`);
     for (const response of [...new Set(badResponses)]) failures.push(`Ressource interne indisponible : ${response}`);
   } finally {
-    chrome.kill('SIGTERM');
+    await stopChrome(chrome);
     fs.rmSync(userDataDir, { recursive: true, force: true });
   }
 
@@ -381,6 +477,8 @@ async function main() {
     generatedAt: new Date().toISOString(),
     baseUrl,
     browser: chromePath,
+    browserVersion,
+    browserLaunchDiagnostics: diagnostics,
     pages,
     viewports,
     results,
