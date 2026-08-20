@@ -22,6 +22,51 @@ body[data-page="home"] .hero{
   padding-top:154px!important;
 }
 
+/* Desktop navigation: prevent broken words and switch to the mobile menu
+   before the header becomes cramped. */
+#site-header .nav{
+  gap:18px;
+}
+
+#site-header .brand{
+  flex:0 1 300px;
+}
+
+#site-header .brand strong,
+#site-header .brand small,
+#site-header .links a,
+#site-header .nav-cta{
+  white-space:nowrap;
+  overflow-wrap:normal;
+  word-break:keep-all;
+  hyphens:none;
+}
+
+#site-header .brand strong{
+  font-size:clamp(.98rem,1.15vw,1.08rem);
+}
+
+#site-header .brand small{
+  font-size:.9rem;
+}
+
+#site-header .links{
+  flex:0 1 auto;
+  gap:4px!important;
+}
+
+#site-header .links a{
+  padding:9px 12px!important;
+  font-size:.9rem;
+}
+
+#site-header .nav-cta{
+  flex:0 0 auto;
+  min-height:48px;
+  padding-inline:18px;
+  font-size:.95rem;
+}
+
 /* Selected treatment: dark transparent glass over the hero,
    then a brighter glass surface after scrolling for maximum readability. */
 body[data-page="home"] .site-header:not(.is-scrolled){
@@ -95,6 +140,31 @@ body[data-page="home"] .site-header:not(.is-scrolled) .mobile-toggle{
   line-height:1.14;
 }
 
+@media(max-width:1120px){
+  #site-header .links{
+    display:none;
+    position:absolute;
+    left:20px;
+    right:20px;
+    top:74px;
+    padding:18px;
+    background:white!important;
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  #site-header .links.open{display:flex}
+  #site-header .links a{
+    color:var(--premium-navy)!important;
+    white-space:normal;
+    padding:11px 14px!important;
+  }
+  #site-header .mobile-toggle{display:block}
+  #site-header .nav-cta{display:none}
+}
+
 @media(max-width:900px){
   #site-header{height:72px}
   body:not([data-page="home"]) main{padding-top:72px}
@@ -110,11 +180,11 @@ body[data-page="home"] .site-header:not(.is-scrolled) .mobile-toggle{
   }
 
   body[data-page="home"] .site-header:not(.is-scrolled) .links a{
-    color:var(--premium-navy);
+    color:var(--premium-navy)!important;
   }
 
   body[data-page="home"] .site-header:not(.is-scrolled) .links a:hover{
-    color:var(--premium-teal);
+    color:var(--premium-teal)!important;
     background:var(--premium-teal-soft);
   }
 }
@@ -122,6 +192,8 @@ body[data-page="home"] .site-header:not(.is-scrolled) .mobile-toggle{
 @media(max-width:620px){
   #site-header{height:72px}
   body[data-page="home"] .hero{padding-top:116px!important}
+  #site-header .brand{flex:1 1 auto}
+  #site-header .brand strong{font-size:.9rem}
   .cards{grid-template-columns:1fr}
   .cards .card h3,.page-card h3{font-size:1.28rem}
 }
