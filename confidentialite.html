@@ -42,6 +42,7 @@
           <li>date et horaire souhaités.</li>
         </ul>
         <p>L’adresse e-mail est facultative dans le formulaire actuel. Les autres champs nécessaires à la demande sont obligatoires. Selon les circonstances, le motif du rendez-vous peut constituer ou révéler une information relative à la santé. Le formulaire n’est pas un dossier médical complet.</p>
+        <p>Le formulaire vérifie également, au moment de l’envoi, que vous confirmez avoir pris connaissance des informations relatives à l’utilisation de vos données et que vous souhaitez transmettre la demande. Cette confirmation n’est pas enregistrée comme une donnée du dossier de rendez-vous.</p>
 
         <h2>Pourquoi ces données sont-elles utilisées&nbsp;?</h2>
         <p>Les données du formulaire servent uniquement à&nbsp;:</p>
@@ -74,12 +75,16 @@
 
         <h2>Assistant du site</h2>
         <p>L’assistant sert uniquement à orienter les visiteurs vers les informations pratiques du cabinet. Il ne délivre ni diagnostic ni conseil thérapeutique. N’y transmettez pas de compte rendu médical, résultat d’examen, diagnostic, ordonnance ou information médicale détaillée.</p>
-        <p>Certaines informations directement identifiantes sont filtrées avant traitement côté serveur. Lorsque cette fonction est disponible, le service peut utiliser l’API OpenAI comme prestataire technique pour produire certaines réponses pratiques. OpenAI n’héberge pas le dossier patient et aucun dossier médical ne lui est transmis.</p>
+        <p>L’assistant n’est pas destiné à recevoir des données médicales personnelles. Lorsque le service OpenAI est actif, le texte saisi, après filtrage de certains identifiants directs, peut être transmis à l’API OpenAI afin de produire une réponse pratique. OpenAI n’héberge pas le dossier patient.</p>
         <p>Les données de l’API OpenAI ne sont pas utilisées par défaut pour entraîner les modèles. Selon les conditions standards de l’API applicables au service, certaines entrées et sorties peuvent être conservées temporairement pour fournir le service et détecter les abus.</p>
+
+        <h2>Transferts hors Espace économique européen</h2>
+        <p>Certains prestataires internationaux, notamment GitHub et OpenAI lorsque ce dernier est utilisé, peuvent impliquer un traitement de données hors de l’Espace économique européen. Ces transferts doivent reposer sur les mécanismes prévus par la réglementation applicable, notamment une décision d’adéquation ou des clauses contractuelles types, selon le prestataire et le traitement concerné.</p>
 
         <h2>Durées de conservation</h2>
         <h3>Demandes non transformées en prise en charge</h3>
-        <p>Elles sont conservées au maximum trois mois après la date de rendez-vous demandée ou, si elle est postérieure, après le dernier traitement nécessaire de la demande. Elles sont supprimées à l’issue de cette durée lorsqu’elles ne sont plus nécessaires.</p>
+        <p>La politique retenue par le cabinet est une conservation maximale de trois mois après la date de rendez-vous demandée ou, si elle est postérieure, après le dernier traitement nécessaire de la demande. Cette politique de suppression doit être mise en œuvre et vérifiée avant l’ouverture définitive du service.</p>
+        <!-- TODO BACKEND RETENTION: implémenter et vérifier la purge des demandes publiques non converties. -->
         <h3>Demandes intégrées à une prise en charge</h3>
         <p>Les données nécessaires intégrées au dossier patient relèvent ensuite des règles de conservation applicables au cabinet médical, avec une conservation pouvant aller jusqu’à 20 ans à compter de la dernière prise en charge et une distinction entre conservation active et archivage lorsqu’elle s’applique. Cette durée n’est pas celle de la simple demande web.</p>
         <h3>Assistant</h3>
