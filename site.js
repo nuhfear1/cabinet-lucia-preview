@@ -1,4 +1,13 @@
 (() => {
+  const FEATURES = Object.freeze({
+    patientPortal: false
+  });
+
+  if (!FEATURES.patientPortal && document.body?.dataset?.page === 'patient') {
+    window.location.replace('index.html');
+    return;
+  }
+
   const ensureStyle = (href, dataAttribute) => {
     if (document.querySelector(`link[${dataAttribute}]`)) return;
     const stylesheet = document.createElement('link');
@@ -10,7 +19,7 @@
 
   ensureStyle('ui.css?v=20260720-premium', 'data-ui-styles');
   ensureStyle('premium.css?v=20260720-premium', 'data-premium-styles');
-  ensureStyle('navigation-fixes.css?v=20260720-navfix', 'data-navigation-fixes');
+  ensureStyle('navigation-fixes.css?v=20260819-navbar', 'data-navigation-fixes');
   ensureStyle('footer-credit.css?v=20260727-credit', 'data-footer-credit-styles');
 
   const bytesToBase64 = (buffer) => {
@@ -80,6 +89,16 @@
     );
   }
 
+  const patientNavLink = FEATURES.patientPortal
+    ? '<a data-nav="patient" href="espace-patient.html">Espace patient</a>'
+    : '';
+  const patientFooterLink = FEATURES.patientPortal
+    ? '<a href="espace-patient.html">Espace patient</a><br>'
+    : '';
+  const patientAssistantSuggestion = FEATURES.patientPortal
+    ? '<button type="button" data-assistant-query="Accéder à l’espace patient">Accéder à l’espace patient</button>'
+    : '';
+
   const headerTarget = document.getElementById('site-header');
   if (headerTarget) {
     headerTarget.innerHTML = `
@@ -98,7 +117,7 @@
             <a data-nav="doctor" href="docteure.html">La docteure</a>
             <a data-nav="consultations" href="consultations.html">Consultations</a>
             <a data-nav="prevention" href="prevention.html">Prévention</a>
-            <a data-nav="patient" href="espace-patient.html">Espace patient</a>
+            ${patientNavLink}
             <a data-nav="locations" href="cabinets.html">Les cabinets</a>
           </nav>
           <a class="button coral nav-cta" href="rendez-vous.html">Prendre rendez-vous</a>
@@ -122,7 +141,7 @@
                 <a href="docteure.html">La docteure</a><br>
                 <a href="consultations.html">Consultations</a><br>
                 <a href="prevention.html">Prévention</a><br>
-                <a href="espace-patient.html">Espace patient</a><br>
+                ${patientFooterLink}
                 <a href="cabinets.html">Les cabinets</a><br>
                 <a href="rendez-vous.html">Rendez-vous</a>
               </p>
@@ -164,7 +183,7 @@
         <div class="assistant-messages" id="assistant-messages" aria-live="polite" aria-label="Conversation avec l’assistant"></div>
         <div class="assistant-suggestions" aria-label="Questions suggérées">
           <button type="button" data-assistant-query="Prendre rendez-vous">Prendre rendez-vous</button>
-          <button type="button" data-assistant-query="Accéder à l’espace patient">Accéder à l’espace patient</button>
+          ${patientAssistantSuggestion}
           <button type="button" data-assistant-query="Trouver un cabinet">Trouver un cabinet</button>
           <button type="button" data-assistant-query="Préparer ma consultation">Préparer ma consultation</button>
         </div>
