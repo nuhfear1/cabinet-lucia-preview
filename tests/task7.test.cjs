@@ -211,6 +211,23 @@ test('assistant client integration is fail-safe and cache versions stay aligned'
   }
 });
 
+test('assistant typing indicator is accessible, unique, ordered and always cleaned up', () => {
+  const assistant = fs.readFileSync(path.join(root, 'assistant.js'), 'utf8');
+  const css = fs.readFileSync(path.join(root, 'ui.css'), 'utf8');
+  assert.match(assistant, /const showTypingIndicator = \(\) =>/);
+  assert.match(assistant, /const hideTypingIndicator = \(\) =>/);
+  assert.match(assistant, /assistant-message bot assistant-typing/);
+  assert.doesNotMatch(assistant, /assistant-message assistant/);
+  assert.match(assistant, /aria-label', 'L’assistant écrit'/);
+  assert.match(assistant, /aria-hidden', 'true'/);
+  assert.ok(assistant.indexOf("append('user', question)") < assistant.indexOf('showTypingIndicator();'));
+  assert.ok(assistant.indexOf('hideTypingIndicator();\n      append(\'bot\'') > assistant.indexOf('const appendAssistantAnswer'));
+  assert.match(assistant, /finally \{\n\s+hideTypingIndicator\(\);/);
+  assert.match(assistant, /messages\.appendChild\(typingIndicator\);\n\s+scrollToLatestMessage\(\);/);
+  assert.match(css, /\.assistant-typing-dots/);
+  assert.match(css, /@media\(prefers-reduced-motion:reduce\)\{\.assistant-typing-dot\{animation:none\}\}/);
+});
+
 test('public config hydrator consumes backend profile and rules', () => {
   const source = fs.readFileSync(path.join(root, 'public-config.js'), 'utf8');
   assert.match(source, /client\.getPublicConfig\(\)/);

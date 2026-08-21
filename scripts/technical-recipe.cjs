@@ -192,17 +192,23 @@ async function checkNavigationAndAssistant(client, failures) {
     const messages = document.getElementById('assistant-messages');
     const waitForAnswer = async (assistantCount) => {
       for (let attempt = 0; attempt < 100; attempt += 1) {
-        if (messages.querySelectorAll('.assistant-message.bot').length > assistantCount) return true;
+        if (messages.querySelectorAll('.assistant-message.bot:not(.assistant-typing)').length > assistantCount) return true;
         await new Promise((resolve) => setTimeout(resolve, 25));
       }
       return false;
     };
     const ask = async (question) => {
-      const assistantCount = messages.querySelectorAll('.assistant-message.bot').length;
+      const assistantCount = messages.querySelectorAll('.assistant-message.bot:not(.assistant-typing)').length;
+      let typingAppeared = false;
+      const observer = new MutationObserver((records) => {
+        typingAppeared ||= records.some((record) => [...record.addedNodes].some((node) => node.nodeType === 1 && node.matches('.assistant-message.bot.assistant-typing')));
+      });
+      observer.observe(messages, { childList: true });
       input.value = question;
       form.requestSubmit();
       const userAppeared = [...messages.querySelectorAll('.assistant-message.user')].some((message) => message.textContent === question);
       const assistantAppeared = await waitForAnswer(assistantCount);
+      observer.disconnect();
       let cycleComplete = false;
       for (let attempt = 0; attempt < 100; attempt += 1) {
         if (!input.disabled && !submit.disabled && document.activeElement === input) {
@@ -212,11 +218,13 @@ async function checkNavigationAndAssistant(client, failures) {
         await new Promise((resolve) => setTimeout(resolve, 25));
       }
       await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      const answer = messages.querySelectorAll('.assistant-message.bot')[assistantCount];
+      const answer = messages.querySelectorAll('.assistant-message.bot:not(.assistant-typing)')[assistantCount];
       const style = answer ? getComputedStyle(answer) : null;
       const bounds = answer?.getBoundingClientRect();
       return {
         userAppeared,
+        typingAppeared,
+        typingRemoved: !messages.querySelector('.assistant-typing'),
         assistantAppeared,
         expectedAnswer: Boolean(answer?.textContent.includes('Les adresses et itinéraires sont regroupés sur la page des cabinets.')),
         displayVisible: style?.display !== 'none',
@@ -256,6 +264,8 @@ async function checkNavigationAndAssistant(client, failures) {
   })()`);
   for (const [scenario, result] of Object.entries(assistantConversation.conversations)) {
     assert(result.userAppeared, `L’assistant (${scenario}) n’affiche pas la question utilisateur.`, failures);
+    assert(result.typingAppeared, `L’indicateur de saisie (${scenario}) n’apparaît pas après la question.`, failures);
+    assert(result.typingRemoved, `L’indicateur de saisie (${scenario}) reste affiché après la réponse.`, failures);
     assert(result.assistantAppeared, `L’assistant (${scenario}) n’affiche aucune réponse.`, failures);
     assert(result.expectedAnswer, `L’assistant (${scenario}) n’affiche pas la réponse locale attendue.`, failures);
     assert(result.displayVisible, `La réponse de l’assistant (${scenario}) a display: none.`, failures);
