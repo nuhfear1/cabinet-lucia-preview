@@ -185,6 +185,23 @@ test('integration scripts load sequentially before consumers', () => {
   assert.ok(config >= 0 && client > config && publicConfig > client && assistant > publicConfig && booking > publicConfig);
 });
 
+test('assistant client integration is fail-safe and cache versions stay aligned', () => {
+  const assistant = fs.readFileSync(path.join(root, 'assistant.js'), 'utf8');
+  assert.match(assistant, /typeof client\.getConfig !== 'function'/);
+  assert.match(assistant, /typeof client\.askAssistant !== 'function'/);
+  assert.match(assistant, /Promise\.race/);
+  assert.ok(assistant.indexOf('try {') < assistant.indexOf('window.CabinetLuciaApi'));
+
+  const version = '20260820-assistant-live';
+  assert.match(fs.readFileSync(path.join(root, 'app.js'), 'utf8'), new RegExp(`const version = '${version}'`));
+  for (const filename of fs.readdirSync(root).filter((file) => file.endsWith('.html'))) {
+    const html = fs.readFileSync(path.join(root, filename), 'utf8');
+    if (/<script[^>]+src="app\.js(?:\?[^\"]*)?"/.test(html)) {
+      assert.match(html, new RegExp(`app\\.js\\?v=${version}`), `${filename} must load the current app.js version`);
+    }
+  }
+});
+
 test('public config hydrator consumes backend profile and rules', () => {
   const source = fs.readFileSync(path.join(root, 'public-config.js'), 'utf8');
   assert.match(source, /client\.getPublicConfig\(\)/);

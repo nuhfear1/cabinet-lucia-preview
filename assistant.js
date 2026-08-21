@@ -63,10 +63,17 @@
         const local = localAnswer(question);
         append('assistant', local.text, { link: local.link, urgent: local.status === 'emergency' });
       };
-      const client = window.CabinetLuciaApi;
-      if (!client || !client.getConfig().enabled) return fallback();
       try {
-        const response = await client.askAssistant(question);
+        const client = window.CabinetLuciaApi;
+        if (!client || typeof client.getConfig !== 'function' || typeof client.askAssistant !== 'function') return fallback();
+        const config = client.getConfig();
+        if (!config || config.enabled !== true) return fallback();
+        const timeoutMs = Number.isFinite(config.timeoutMs) ? Math.min(Math.max(config.timeoutMs, 1000), 15000) : 8000;
+        let timeout;
+        const response = await Promise.race([
+          client.askAssistant(question),
+          new Promise((_, reject) => { timeout = setTimeout(() => reject(new Error('Assistant timeout')), timeoutMs); })
+        ]).finally(() => clearTimeout(timeout));
         const data = response.data;
         if (!response.enabled || !data || typeof data.answer !== 'string' || !data.answer.trim() || data.answer.length > 2000 || !['answer', 'unknown', 'medical_refusal', 'emergency'].includes(data.status)) throw new Error('Invalid response');
         append('assistant', data.answer, { urgent: data.status === 'emergency' });
