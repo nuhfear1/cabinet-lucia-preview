@@ -5,9 +5,10 @@ const path = require('node:path');
 
 const assistant = fs.readFileSync(path.resolve(__dirname, '..', 'assistant.js'), 'utf8');
 
-test('assistant removes paired bold markdown while keeping DOM output text-only', () => {
+test('assistant removes paired bold markdown only from bot output while keeping DOM output text-only', () => {
   assert.match(assistant, /const normalizeAssistantText = \(value\) => String\(value\)\.replace\(\/\\\*\\\*\(\?=\\S\)\(\[\\s\\S\]\*\?\\S\)\\\*\\\*\/g, '\$1'\);/);
-  assert.match(assistant, /message\.textContent = normalizeAssistantText\(content\);/);
+  assert.match(assistant, /message\.textContent = role === 'bot' \? normalizeAssistantText\(content\) : content;/);
+  assert.match(assistant, /append\('user', question\);/);
   assert.doesNotMatch(assistant, /\.innerHTML\s*=/);
   assert.doesNotMatch(assistant, /insertAdjacentHTML/);
 });
