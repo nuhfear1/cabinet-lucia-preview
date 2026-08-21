@@ -2,6 +2,7 @@
   'use strict';
 
   const normalize = (value) => value.toLocaleLowerCase('fr').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s'-]/g, ' ').replace(/\s+/g, ' ').trim();
+  const normalizeAssistantText = (value) => String(value).replace(/\*\*(?=\S)([\s\S]*?\S)\*\*/g, '$1');
   const responses = {
     emergency: 'Je ne peux pas évaluer une urgence médicale. Contactez immédiatement le 15 ou le 112.',
     medical_refusal: 'Je ne peux pas interpréter une situation médicale personnelle. La Docteure Lucia Cespedes-Ocampo pourra vous répondre dans le cadre d’une consultation.',
@@ -37,7 +38,7 @@
     const append = (role, content, options = {}) => {
       const message = document.createElement('div');
       message.className = `assistant-message ${role}${options.urgent ? ' urgent' : ''}`;
-      message.textContent = content;
+      message.textContent = normalizeAssistantText(content);
       if (options.link) {
         message.append(document.createTextNode(' '));
         const link = document.createElement('a');
