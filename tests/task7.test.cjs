@@ -191,6 +191,15 @@ test('assistant client integration is fail-safe and cache versions stay aligned'
   assert.match(assistant, /typeof client\.askAssistant !== 'function'/);
   assert.match(assistant, /Promise\.race/);
   assert.ok(assistant.indexOf('try {') < assistant.indexOf('window.CabinetLuciaApi'));
+  assert.doesNotMatch(assistant, /append\('assistant'/);
+  assert.match(assistant, /append\('bot'/);
+
+  const recipe = fs.readFileSync(path.join(root, 'scripts/technical-recipe.cjs'), 'utf8');
+  assert.doesNotMatch(recipe, /\.assistant-message\.assistant/);
+  assert.match(recipe, /\.assistant-message\.bot/);
+  for (const visibilityCheck of ['displayVisible', 'visibilityVisible', 'opacityVisible', 'positionInFlow', 'renderedSize']) {
+    assert.match(recipe, new RegExp(visibilityCheck));
+  }
 
   const version = '20260820-assistant-live';
   assert.match(fs.readFileSync(path.join(root, 'app.js'), 'utf8'), new RegExp(`const version = '${version}'`));

@@ -48,7 +48,7 @@
       panel.hidden = false;
       requestAnimationFrame(() => panel.classList.add('open'));
       openButton.setAttribute('aria-expanded', 'true');
-      if (!messages.children.length) append('assistant', 'Bonjour. Je peux vous orienter vers les rendez-vous, les cabinets, l’espace patient et les informations pratiques du site.');
+      if (!messages.children.length) append('bot', 'Bonjour. Je peux vous orienter vers les rendez-vous, les cabinets, l’espace patient et les informations pratiques du site.');
       input.focus();
     };
     const close = () => {
@@ -61,7 +61,7 @@
     const answer = async (question) => {
       const fallback = () => {
         const local = localAnswer(question);
-        append('assistant', local.text, { link: local.link, urgent: local.status === 'emergency' });
+        append('bot', local.text, { link: local.link, urgent: local.status === 'emergency' });
       };
       try {
         const client = window.CabinetLuciaApi;
@@ -76,7 +76,7 @@
         ]).finally(() => clearTimeout(timeout));
         const data = response.data;
         if (!response.enabled || !data || typeof data.answer !== 'string' || !data.answer.trim() || data.answer.length > 2000 || !['answer', 'unknown', 'medical_refusal', 'emergency'].includes(data.status)) throw new Error('Invalid response');
-        append('assistant', data.answer, { urgent: data.status === 'emergency' });
+        append('bot', data.answer, { urgent: data.status === 'emergency' });
       } catch {
         fallback();
       }

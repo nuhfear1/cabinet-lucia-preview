@@ -192,22 +192,29 @@ async function checkNavigationAndAssistant(client, failures) {
     const messages = document.getElementById('assistant-messages');
     const waitForAnswer = async (assistantCount) => {
       for (let attempt = 0; attempt < 100; attempt += 1) {
-        if (messages.querySelectorAll('.assistant-message.assistant').length > assistantCount) return true;
+        if (messages.querySelectorAll('.assistant-message.bot').length > assistantCount) return true;
         await new Promise((resolve) => setTimeout(resolve, 25));
       }
       return false;
     };
     const ask = async (question) => {
-      const assistantCount = messages.querySelectorAll('.assistant-message.assistant').length;
+      const assistantCount = messages.querySelectorAll('.assistant-message.bot').length;
       input.value = question;
       form.requestSubmit();
       const userAppeared = [...messages.querySelectorAll('.assistant-message.user')].some((message) => message.textContent === question);
       const assistantAppeared = await waitForAnswer(assistantCount);
+      const answer = messages.querySelectorAll('.assistant-message.bot')[assistantCount];
+      const style = answer ? getComputedStyle(answer) : null;
+      const bounds = answer?.getBoundingClientRect();
       return {
         userAppeared,
         assistantAppeared,
-        localAnswerAppeared: [...messages.querySelectorAll('.assistant-message.assistant')]
-          .some((message) => message.textContent.includes('Les adresses et itinéraires sont regroupés sur la page des cabinets.')),
+        expectedAnswer: Boolean(answer?.textContent.includes('Les adresses et itinéraires sont regroupés sur la page des cabinets.')),
+        displayVisible: style?.display !== 'none',
+        visibilityVisible: style?.visibility !== 'hidden',
+        opacityVisible: style?.opacity !== '0',
+        positionInFlow: style?.position !== 'fixed',
+        renderedSize: Boolean(bounds && bounds.width > 0 && bounds.height > 0),
         inputEnabled: !input.disabled,
         submitEnabled: !submit.disabled,
         inputFocused: document.activeElement === input
@@ -223,7 +230,12 @@ async function checkNavigationAndAssistant(client, failures) {
   for (const [scenario, result] of Object.entries(assistantConversation)) {
     assert(result.userAppeared, `L’assistant (${scenario}) n’affiche pas la question utilisateur.`, failures);
     assert(result.assistantAppeared, `L’assistant (${scenario}) n’affiche aucune réponse.`, failures);
-    assert(result.localAnswerAppeared, `L’assistant (${scenario}) n’affiche pas la réponse locale attendue.`, failures);
+    assert(result.expectedAnswer, `L’assistant (${scenario}) n’affiche pas la réponse locale attendue.`, failures);
+    assert(result.displayVisible, `La réponse de l’assistant (${scenario}) a display: none.`, failures);
+    assert(result.visibilityVisible, `La réponse de l’assistant (${scenario}) a visibility: hidden.`, failures);
+    assert(result.opacityVisible, `La réponse de l’assistant (${scenario}) a opacity: 0.`, failures);
+    assert(result.positionInFlow, `La réponse de l’assistant (${scenario}) est positionnée en fixed.`, failures);
+    assert(result.renderedSize, `La réponse de l’assistant (${scenario}) n’a pas de taille rendue visible.`, failures);
     assert(result.inputEnabled, `Le champ de l’assistant (${scenario}) reste désactivé.`, failures);
     assert(result.submitEnabled, `Le bouton Envoyer (${scenario}) reste désactivé.`, failures);
     assert(result.inputFocused, `Le focus ne revient pas au champ de l’assistant (${scenario}).`, failures);
