@@ -30,6 +30,7 @@
 
     let lastFocusedElement = null;
     let responding = false;
+    let typingIndicator = null;
     const scrollToLatestMessage = () => requestAnimationFrame(() => {
       messages.scrollTop = messages.scrollHeight;
     });
@@ -45,6 +46,31 @@
       }
       messages.appendChild(message);
       scrollToLatestMessage();
+    };
+    const hideTypingIndicator = () => {
+      typingIndicator?.remove();
+      typingIndicator = null;
+    };
+    const showTypingIndicator = () => {
+      hideTypingIndicator();
+      typingIndicator = document.createElement('div');
+      typingIndicator.className = 'assistant-message bot assistant-typing';
+      typingIndicator.setAttribute('aria-label', 'L’assistant écrit');
+      const dots = document.createElement('span');
+      dots.className = 'assistant-typing-dots';
+      dots.setAttribute('aria-hidden', 'true');
+      for (let index = 0; index < 3; index += 1) {
+        const dot = document.createElement('span');
+        dot.className = 'assistant-typing-dot';
+        dots.appendChild(dot);
+      }
+      typingIndicator.appendChild(dots);
+      messages.appendChild(typingIndicator);
+      scrollToLatestMessage();
+    };
+    const appendAssistantAnswer = (content, options = {}) => {
+      hideTypingIndicator();
+      append('bot', content, options);
     };
     const open = () => {
       lastFocusedElement = document.activeElement;
@@ -65,7 +91,7 @@
     const answer = async (question) => {
       const fallback = () => {
         const local = localAnswer(question);
-        append('bot', local.text, { link: local.link, urgent: local.status === 'emergency' });
+        appendAssistantAnswer(local.text, { link: local.link, urgent: local.status === 'emergency' });
       };
       try {
         const client = window.CabinetLuciaApi;
@@ -80,7 +106,7 @@
         ]).finally(() => clearTimeout(timeout));
         const data = response.data;
         if (!response.enabled || !data || typeof data.answer !== 'string' || !data.answer.trim() || data.answer.length > 2000 || !['answer', 'unknown', 'medical_refusal', 'emergency'].includes(data.status)) throw new Error('Invalid response');
-        append('bot', data.answer, { urgent: data.status === 'emergency' });
+        appendAssistantAnswer(data.answer, { urgent: data.status === 'emergency' });
       } catch {
         fallback();
       }
@@ -89,9 +115,11 @@
       if (responding || !question || question.length > 500) return;
       responding = true;
       append('user', question);
+      showTypingIndicator();
       input.disabled = true;
       submitButton.disabled = true;
       try { await answer(question); } finally {
+        hideTypingIndicator();
         responding = false;
         input.disabled = false;
         submitButton.disabled = false;
