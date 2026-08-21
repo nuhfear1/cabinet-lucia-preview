@@ -12,6 +12,7 @@ const required = [
   'public-api.js',
   'public-config.js',
   'assistant.js',
+  'assistant-context.json',
   'booking.js',
   'patient-portal.js',
   'FINAL_CONNECTION_CHECKLIST.md',

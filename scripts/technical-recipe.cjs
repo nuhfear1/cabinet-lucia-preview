@@ -203,6 +203,15 @@ async function checkNavigationAndAssistant(client, failures) {
       form.requestSubmit();
       const userAppeared = [...messages.querySelectorAll('.assistant-message.user')].some((message) => message.textContent === question);
       const assistantAppeared = await waitForAnswer(assistantCount);
+      let cycleComplete = false;
+      for (let attempt = 0; attempt < 100; attempt += 1) {
+        if (!input.disabled && !submit.disabled && document.activeElement === input) {
+          cycleComplete = true;
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 25));
+      }
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
       const answer = messages.querySelectorAll('.assistant-message.bot')[assistantCount];
       const style = answer ? getComputedStyle(answer) : null;
       const bounds = answer?.getBoundingClientRect();
@@ -215,6 +224,7 @@ async function checkNavigationAndAssistant(client, failures) {
         opacityVisible: style?.opacity !== '0',
         positionInFlow: style?.position !== 'fixed',
         renderedSize: Boolean(bounds && bounds.width > 0 && bounds.height > 0),
+        cycleComplete,
         inputEnabled: !input.disabled,
         submitEnabled: !submit.disabled,
         inputFocused: document.activeElement === input
@@ -224,10 +234,27 @@ async function checkNavigationAndAssistant(client, failures) {
     const disabledBackend = await ask('Trouver un cabinet');
     window.CabinetLuciaApi = {};
     const incompleteClient = await ask('Trouver un cabinet');
+    for (let index = 0; index < 6; index += 1) await ask('Trouver un cabinet');
     window.CabinetLuciaApi = completeClient;
-    return { disabledBackend, incompleteClient };
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const panel = document.getElementById('assistant');
+    const floatingButton = document.getElementById('assistant-btn');
+    const panelBounds = panel.getBoundingClientRect();
+    const inputBounds = input.getBoundingClientRect();
+    const lastMessageBounds = messages.lastElementChild.getBoundingClientRect();
+    const messageStyle = getComputedStyle(messages);
+    return {
+      conversations: { disabledBackend, incompleteClient },
+      ux: {
+        panelInViewport: panelBounds.top >= 0 && panelBounds.bottom <= innerHeight && panelBounds.left >= 0 && panelBounds.right <= innerWidth,
+        messagesScrollable: ['auto', 'scroll'].includes(messageStyle.overflowY) && messages.scrollHeight > messages.clientHeight,
+        inputVisible: inputBounds.top >= panelBounds.top && inputBounds.bottom <= Math.min(panelBounds.bottom, innerHeight),
+        latestVisible: lastMessageBounds.bottom <= messages.getBoundingClientRect().bottom + 1,
+        floatingButtonHidden: getComputedStyle(floatingButton).display === 'none'
+      }
+    };
   })()`);
-  for (const [scenario, result] of Object.entries(assistantConversation)) {
+  for (const [scenario, result] of Object.entries(assistantConversation.conversations)) {
     assert(result.userAppeared, `L’assistant (${scenario}) n’affiche pas la question utilisateur.`, failures);
     assert(result.assistantAppeared, `L’assistant (${scenario}) n’affiche aucune réponse.`, failures);
     assert(result.expectedAnswer, `L’assistant (${scenario}) n’affiche pas la réponse locale attendue.`, failures);
@@ -236,10 +263,16 @@ async function checkNavigationAndAssistant(client, failures) {
     assert(result.opacityVisible, `La réponse de l’assistant (${scenario}) a opacity: 0.`, failures);
     assert(result.positionInFlow, `La réponse de l’assistant (${scenario}) est positionnée en fixed.`, failures);
     assert(result.renderedSize, `La réponse de l’assistant (${scenario}) n’a pas de taille rendue visible.`, failures);
+    assert(result.cycleComplete, `Le cycle de réponse de l’assistant (${scenario}) ne se termine pas correctement.`, failures);
     assert(result.inputEnabled, `Le champ de l’assistant (${scenario}) reste désactivé.`, failures);
     assert(result.submitEnabled, `Le bouton Envoyer (${scenario}) reste désactivé.`, failures);
     assert(result.inputFocused, `Le focus ne revient pas au champ de l’assistant (${scenario}).`, failures);
   }
+  assert(assistantConversation.ux.panelInViewport, 'Le panneau de l’assistant sort du viewport.', failures);
+  assert(assistantConversation.ux.messagesScrollable, 'La zone de messages ne devient pas scrollable après plusieurs échanges.', failures);
+  assert(assistantConversation.ux.inputVisible, 'Le champ de l’assistant n’est pas visible dans le panneau.', failures);
+  assert(assistantConversation.ux.latestVisible, 'Le dernier message de l’assistant n’est pas visible automatiquement.', failures);
+  assert(assistantConversation.ux.floatingButtonHidden, 'Le bouton flottant chevauche le panneau ouvert.', failures);
 
   const assistantClosed = await evaluate(client, `(() => {
     document.getElementById('close-assistant')?.click();
@@ -248,6 +281,19 @@ async function checkNavigationAndAssistant(client, failures) {
     return Boolean(button && assistant && assistant.hidden && button.getAttribute('aria-expanded') === 'false');
   })()`);
   assert(assistantClosed, 'L’assistant public ne se ferme pas correctement.', failures);
+
+  const assistantReopened = await evaluate(client, `(async () => {
+    const button = document.getElementById('assistant-btn');
+    const assistant = document.getElementById('assistant');
+    const input = document.getElementById('assistant-input');
+    button?.click();
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      if (button && assistant && !assistant.hidden && assistant.classList.contains('open') && document.activeElement === input && getComputedStyle(assistant).display !== 'none') return true;
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    }
+    return false;
+  })()`);
+  assert(assistantReopened, 'L’assistant public ne se réouvre pas après fermeture.', failures);
 
   const skipLinkFocusable = await evaluate(client, `(() => {
     const link = document.querySelector('.skip-link');
