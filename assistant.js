@@ -30,6 +30,10 @@
 
     let lastFocusedElement = null;
     let responding = false;
+    const scrollToLatestMessage = () => requestAnimationFrame(() => {
+      messages.scrollTop = messages.scrollHeight;
+      messages.lastElementChild?.scrollIntoView({ block: 'nearest' });
+    });
     const append = (role, content, options = {}) => {
       const message = document.createElement('div');
       message.className = `assistant-message ${role}${options.urgent ? ' urgent' : ''}`;
@@ -41,7 +45,7 @@
         message.append(link);
       }
       messages.appendChild(message);
-      messages.scrollTop = messages.scrollHeight;
+      scrollToLatestMessage();
     };
     const open = () => {
       lastFocusedElement = document.activeElement;
@@ -49,6 +53,7 @@
       requestAnimationFrame(() => panel.classList.add('open'));
       openButton.setAttribute('aria-expanded', 'true');
       if (!messages.children.length) append('bot', 'Bonjour. Je peux vous orienter vers les rendez-vous, les cabinets, l’espace patient et les informations pratiques du site.');
+      scrollToLatestMessage();
       input.focus();
     };
     const close = () => {

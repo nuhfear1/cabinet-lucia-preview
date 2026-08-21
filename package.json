@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "build:assistant-context": "node scripts/generate-assistant-context.cjs",
     "test": "node --test tests/*.test.cjs",
-    "verify": "npm test && node scripts/verify-static-site.cjs",
+    "verify": "npm run build:assistant-context && npm test && node scripts/verify-static-site.cjs && git diff --exit-code -- assistant-context.json",
     "test:browser": "node -r ./scripts/ignore-rm-enotempty.cjs scripts/technical-recipe.cjs"
   },
   "engines": {

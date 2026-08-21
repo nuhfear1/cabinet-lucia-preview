@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "source": "public-site",
+  "entries": [
+    {
+      "id": "appointment-request-process",
+      "page": "rendez-vous.html",
+      "title": "Demande de rendez-vous",
+      "text": "Votre rendez-vous Un parcours clair, étape par étape. Transmettez une demande au cabinet. Le secrétariat confirme ensuite le rendez-vous selon les disponibilités.",
+      "url": "rendez-vous.html",
+      "type": "appointment"
+    },
+    {
+      "id": "cabinet-morne-a-leau",
+      "page": "cabinets.html",
+      "title": "Cabinet de Morne-à-l’Eau",
+      "text": "Cabinet de Morne-à-l’Eau 4127 Route de Abdon Saman – Perrin\n97111 Morne-à-l’Eau Route du nouveau CHU direction Perrin. Deuxième dos d’âne, face à l’épicerie Gamby. Parking Rez-de-villa Accès PMR Ouvrir l’itinéraire",
+      "url": "cabinets.html",
+      "type": "location",
+      "links": [
+        "https://www.google.com/maps/search/?api=1&query=4127+Route+de+Abdon+Saman+Perrin+97111+Morne-a-l%27Eau"
+      ]
+    },
+    {
+      "id": "cabinet-overview",
+      "page": "cabinets.html",
+      "title": "Les deux cabinets",
+      "text": "Deux lieux de consultation Retrouvez facilement le bon cabinet. Chaque confirmation de rendez-vous rappellera le lieu exact, le GPS, les conditions d’accès et les informations utiles.",
+      "url": "cabinets.html",
+      "type": "location"
+    },
+    {
+      "id": "cabinet-sainte-rose",
+      "page": "cabinets.html",
+      "title": "Cabinet de Sainte-Rose",
+      "text": "Sainte-Rose Place Tricolore — 88J3+W89\nAv. Sainte-Rose de Lima\n97115 Sainte-Rose, Guadeloupe Ouvrir l’itinéraire",
+      "url": "cabinets.html",
+      "type": "location",
+      "links": [
+        "https://www.google.com/maps/search/?api=1&query=Place+Tricolore+88J3%2BW89+Av.+Sainte-Rose+de+Lima+97115+Sainte-Rose+Guadeloupe"
+      ]
+    },
+    {
+      "id": "doctor-identity",
+      "page": "docteure.html",
+      "title": "Docteure Lucia Cespedes-Ocampo",
+      "text": "Une présence humaine au centre La cardiologie commence par une relation de confiance. Découvrez l’approche, le parcours et les engagements de la Docteure Lucia Cespedes-Ocampo. Prendre rendez-vous",
+      "url": "docteure.html",
+      "type": "identity",
+      "links": [
+        "rendez-vous.html"
+      ]
+    }
+  ]
+}
