@@ -38,7 +38,7 @@
     const append = (role, content, options = {}) => {
       const message = document.createElement('div');
       message.className = `assistant-message ${role}${options.urgent ? ' urgent' : ''}`;
-      message.textContent = normalizeAssistantText(content);
+      message.textContent = role === 'bot' ? normalizeAssistantText(content) : content;
       if (options.link) {
         message.append(document.createTextNode(' '));
         const link = document.createElement('a');
