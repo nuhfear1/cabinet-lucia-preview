@@ -203,6 +203,15 @@ async function checkNavigationAndAssistant(client, failures) {
       form.requestSubmit();
       const userAppeared = [...messages.querySelectorAll('.assistant-message.user')].some((message) => message.textContent === question);
       const assistantAppeared = await waitForAnswer(assistantCount);
+      let cycleComplete = false;
+      for (let attempt = 0; attempt < 100; attempt += 1) {
+        if (!input.disabled && !submit.disabled && document.activeElement === input) {
+          cycleComplete = true;
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 25));
+      }
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
       const answer = messages.querySelectorAll('.assistant-message.bot')[assistantCount];
       const style = answer ? getComputedStyle(answer) : null;
       const bounds = answer?.getBoundingClientRect();
@@ -215,6 +224,7 @@ async function checkNavigationAndAssistant(client, failures) {
         opacityVisible: style?.opacity !== '0',
         positionInFlow: style?.position !== 'fixed',
         renderedSize: Boolean(bounds && bounds.width > 0 && bounds.height > 0),
+        cycleComplete,
         inputEnabled: !input.disabled,
         submitEnabled: !submit.disabled,
         inputFocused: document.activeElement === input
@@ -253,6 +263,7 @@ async function checkNavigationAndAssistant(client, failures) {
     assert(result.opacityVisible, `La réponse de l’assistant (${scenario}) a opacity: 0.`, failures);
     assert(result.positionInFlow, `La réponse de l’assistant (${scenario}) est positionnée en fixed.`, failures);
     assert(result.renderedSize, `La réponse de l’assistant (${scenario}) n’a pas de taille rendue visible.`, failures);
+    assert(result.cycleComplete, `Le cycle de réponse de l’assistant (${scenario}) ne se termine pas correctement.`, failures);
     assert(result.inputEnabled, `Le champ de l’assistant (${scenario}) reste désactivé.`, failures);
     assert(result.submitEnabled, `Le bouton Envoyer (${scenario}) reste désactivé.`, failures);
     assert(result.inputFocused, `Le focus ne revient pas au champ de l’assistant (${scenario}).`, failures);
@@ -271,11 +282,16 @@ async function checkNavigationAndAssistant(client, failures) {
   })()`);
   assert(assistantClosed, 'L’assistant public ne se ferme pas correctement.', failures);
 
-  const assistantReopened = await evaluate(client, `(() => {
+  const assistantReopened = await evaluate(client, `(async () => {
     const button = document.getElementById('assistant-btn');
     const assistant = document.getElementById('assistant');
+    const input = document.getElementById('assistant-input');
     button?.click();
-    return Boolean(button && assistant && !assistant.hidden && assistant.classList.contains('open'));
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      if (button && assistant && !assistant.hidden && assistant.classList.contains('open') && document.activeElement === input && getComputedStyle(assistant).display !== 'none') return true;
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    }
+    return false;
   })()`);
   assert(assistantReopened, 'L’assistant public ne se réouvre pas après fermeture.', failures);
 

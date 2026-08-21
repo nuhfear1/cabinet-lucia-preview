@@ -1,8 +1,8 @@
 .image-placeholder>.label,.media>.label{display:none!important}
 
 /* The assistant is a bounded application panel: only its conversation scrolls. */
-.assistant{bottom:24px!important;width:min(430px,calc(100% - 48px))!important;max-height:calc(100dvh - 48px);padding:18px!important;display:none!important;grid-template-rows:auto auto auto minmax(96px,1fr) auto auto;gap:10px;overflow:hidden}
-.assistant.open{display:grid!important}
+.assistant{bottom:24px!important;width:min(430px,calc(100% - 48px))!important;max-height:calc(100dvh - 48px);padding:18px!important;grid-template-rows:auto auto auto minmax(96px,1fr) auto auto;gap:10px;overflow:hidden}
+.assistant:not([hidden]){display:grid!important}
 .assistant-description,.assistant .notice{margin:0}
 .assistant .notice{padding:9px 11px;line-height:1.35}
 .assistant-messages{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;padding-right:4px}
