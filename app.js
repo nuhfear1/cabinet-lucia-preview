@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const version = '20260805-backend-production';
+  const version = '20260820-assistant-live';
   const load = (src) => new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = `${src}?v=${version}`;

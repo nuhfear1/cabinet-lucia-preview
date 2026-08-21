@@ -184,6 +184,51 @@ async function checkNavigationAndAssistant(client, failures) {
     return Boolean(button && assistant && !assistant.hidden && button.getAttribute('aria-expanded') === 'true');
   })()`);
   assert(assistantOpened, 'L’assistant public ne s’ouvre pas correctement.', failures);
+
+  const assistantConversation = await evaluate(client, `(async () => {
+    const form = document.getElementById('assistant-form');
+    const input = document.getElementById('assistant-input');
+    const submit = form?.querySelector('[type="submit"]');
+    const messages = document.getElementById('assistant-messages');
+    const waitForAnswer = async (assistantCount) => {
+      for (let attempt = 0; attempt < 100; attempt += 1) {
+        if (messages.querySelectorAll('.assistant-message.assistant').length > assistantCount) return true;
+        await new Promise((resolve) => setTimeout(resolve, 25));
+      }
+      return false;
+    };
+    const ask = async (question) => {
+      const assistantCount = messages.querySelectorAll('.assistant-message.assistant').length;
+      input.value = question;
+      form.requestSubmit();
+      const userAppeared = [...messages.querySelectorAll('.assistant-message.user')].some((message) => message.textContent === question);
+      const assistantAppeared = await waitForAnswer(assistantCount);
+      return {
+        userAppeared,
+        assistantAppeared,
+        localAnswerAppeared: [...messages.querySelectorAll('.assistant-message.assistant')]
+          .some((message) => message.textContent.includes('Les adresses et itinéraires sont regroupés sur la page des cabinets.')),
+        inputEnabled: !input.disabled,
+        submitEnabled: !submit.disabled,
+        inputFocused: document.activeElement === input
+      };
+    };
+    const completeClient = window.CabinetLuciaApi;
+    const disabledBackend = await ask('Trouver un cabinet');
+    window.CabinetLuciaApi = {};
+    const incompleteClient = await ask('Trouver un cabinet');
+    window.CabinetLuciaApi = completeClient;
+    return { disabledBackend, incompleteClient };
+  })()`);
+  for (const [scenario, result] of Object.entries(assistantConversation)) {
+    assert(result.userAppeared, `L’assistant (${scenario}) n’affiche pas la question utilisateur.`, failures);
+    assert(result.assistantAppeared, `L’assistant (${scenario}) n’affiche aucune réponse.`, failures);
+    assert(result.localAnswerAppeared, `L’assistant (${scenario}) n’affiche pas la réponse locale attendue.`, failures);
+    assert(result.inputEnabled, `Le champ de l’assistant (${scenario}) reste désactivé.`, failures);
+    assert(result.submitEnabled, `Le bouton Envoyer (${scenario}) reste désactivé.`, failures);
+    assert(result.inputFocused, `Le focus ne revient pas au champ de l’assistant (${scenario}).`, failures);
+  }
+
   const assistantClosed = await evaluate(client, `(() => {
     document.getElementById('close-assistant')?.click();
     const button = document.getElementById('assistant-btn');
