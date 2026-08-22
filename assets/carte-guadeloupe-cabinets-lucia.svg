@@ -1,0 +1,200 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 580" role="img" aria-label="Carte de la Guadeloupe montrant les deux cabinets : Sainte-Rose (Basse-Terre) et Morne-à-l'Eau (Grande-Terre)">
+  <defs>
+    <filter id="card-shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="20" flood-color="#c8c0b0" flood-opacity="0.25"/>
+    </filter>
+    <filter id="island-shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="6" stdDeviation="14" flood-color="#7ab5ae" flood-opacity="0.30"/>
+    </filter>
+    <filter id="label-shadow" x="-20%" y="-30%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="3" stdDeviation="8" flood-color="#b0a898" flood-opacity="0.22"/>
+    </filter>
+    <filter id="pin-shadow" x="-80%" y="-80%" width="260%" height="260%">
+      <feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#d94f30" flood-opacity="0.28"/>
+    </filter>
+    <!-- Subtle radial glow behind the map -->
+    <radialGradient id="glow" cx="58%" cy="48%" r="42%">
+      <stop offset="0%" stop-color="#e8eded" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#f0ece5" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Card background -->
+  <rect x="1" y="1" width="898" height="578" rx="26" ry="26" fill="#f5f1eb" filter="url(#card-shadow)"/>
+  <rect x="1" y="1" width="898" height="578" rx="26" ry="26" fill="none" stroke="#e8e2da" stroke-width="1"/>
+
+  <!-- Soft glow circle behind map -->
+  <ellipse cx="555" cy="295" rx="310" ry="265" fill="url(#glow)"/>
+  <ellipse cx="555" cy="295" rx="310" ry="265" fill="none" stroke="#e0dbd2" stroke-width="1" opacity="0.5"/>
+
+  <!-- ===================== GUADELOUPE ISLANDS ===================== -->
+
+  <!-- Basse-Terre (left/west island) -->
+  <path d="
+    M 432 130
+    C 440 122, 455 118, 466 124
+    C 476 116, 490 113, 500 119
+    C 510 112, 524 114, 528 123
+    C 538 118, 548 122, 549 132
+    C 558 130, 565 139, 561 149
+    C 570 150, 574 162, 568 172
+    C 576 177, 578 190, 572 199
+    C 578 206, 577 220, 570 228
+    C 575 237, 572 251, 562 257
+    C 564 268, 558 281, 549 285
+    C 548 297, 540 311, 530 315
+    C 527 328, 518 341, 507 344
+    C 500 357, 487 370, 474 371
+    C 464 382, 449 391, 434 390
+    C 422 397, 406 400, 393 394
+    C 380 399, 362 397, 351 387
+    C 339 390, 324 384, 317 373
+    C 306 372, 296 361, 296 349
+    C 285 342, 280 327, 284 315
+    C 275 305, 275 288, 282 278
+    C 275 265, 278 249, 288 242
+    C 285 228, 293 214, 303 210
+    C 302 197, 311 183, 323 179
+    C 322 166, 333 153, 346 150
+    C 348 138, 361 126, 374 125
+    C 380 115, 397 110, 407 117
+    C 415 110, 428 112, 432 120
+    Z
+  " fill="#8ec5bf" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" filter="url(#island-shadow)"/>
+
+  <!-- Commune division lines – Basse-Terre (subtle internal boundaries) -->
+  <g stroke="#b8dbd8" stroke-width="1" fill="none" opacity="0.8">
+    <!-- Horizontal bands -->
+    <path d="M 320 162 Q 420 168 548 162"/>
+    <path d="M 305 198 Q 410 204 566 196"/>
+    <path d="M 300 235 Q 408 240 565 232"/>
+    <path d="M 297 270 Q 408 275 564 268"/>
+    <path d="M 296 305 Q 408 308 558 302"/>
+    <path d="M 300 338 Q 405 340 542 333"/>
+    <path d="M 313 368 Q 400 368 516 360"/>
+    <!-- Vertical lines -->
+    <path d="M 368 128 Q 366 260 360 388"/>
+    <path d="M 430 118 Q 428 255 422 388"/>
+    <path d="M 490 116 Q 487 252 480 378"/>
+    <path d="M 534 126 Q 533 260 525 360"/>
+  </g>
+
+  <!-- Thin water channel (Rivière Salée) -->
+  <path d="M 560 248 Q 566 260 562 280" stroke="#f5f1eb" stroke-width="9" fill="none" stroke-linecap="round"/>
+  <path d="M 560 248 Q 566 260 562 280" stroke="#d8ede9" stroke-width="4" fill="none" stroke-linecap="round"/>
+
+  <!-- Grande-Terre (right/east island) -->
+  <path d="
+    M 580 185
+    C 588 176, 603 171, 616 175
+    C 623 166, 638 163, 649 168
+    C 658 162, 673 163, 679 171
+    C 688 167, 701 172, 704 181
+    C 714 178, 725 186, 722 197
+    C 731 199, 736 211, 730 221
+    C 737 226, 739 240, 731 248
+    C 736 258, 733 273, 722 279
+    C 723 290, 714 304, 702 308
+    C 698 320, 685 330, 671 331
+    C 663 341, 647 348, 631 345
+    C 620 351, 601 353, 586 347
+    C 572 351, 556 345, 546 333
+    C 534 330, 525 317, 526 304
+    C 516 296, 514 280, 521 270
+    C 515 259, 518 242, 528 234
+    C 524 222, 529 206, 540 199
+    C 537 187, 545 173, 558 168
+    C 562 157, 576 151, 588 158
+    Z
+  " fill="#8ec5bf" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" filter="url(#island-shadow)"/>
+
+  <!-- Commune division lines – Grande-Terre -->
+  <g stroke="#b8dbd8" stroke-width="1" fill="none" opacity="0.8">
+    <path d="M 530 206 Q 626 212 728 204"/>
+    <path d="M 522 242 Q 622 247 732 240"/>
+    <path d="M 523 278 Q 622 281 726 275"/>
+    <path d="M 530 312 Q 620 314 716 308"/>
+    <path d="M 588 160 Q 586 254 580 344"/>
+    <path d="M 646 166 Q 644 257 636 344"/>
+    <path d="M 698 176 Q 698 262 692 320"/>
+  </g>
+
+  <!-- Les Saintes (small islands south of Basse-Terre) -->
+  <g filter="url(#island-shadow)">
+    <ellipse cx="340" cy="428" rx="22" ry="14" fill="#8ec5bf" stroke="#ffffff" stroke-width="1.5"/>
+    <ellipse cx="370" cy="438" rx="17" ry="11" fill="#8ec5bf" stroke="#ffffff" stroke-width="1.5"/>
+  </g>
+
+  <!-- Marie-Galante -->
+  <g filter="url(#island-shadow)">
+    <ellipse cx="700" cy="430" rx="38" ry="32" fill="#8ec5bf" stroke="#ffffff" stroke-width="1.5"/>
+    <!-- Commune line in Marie-Galante -->
+    <line x1="700" y1="399" x2="700" y2="461" stroke="#b8dbd8" stroke-width="1" opacity="0.8"/>
+    <line x1="663" y1="430" x2="737" y2="430" stroke="#b8dbd8" stroke-width="1" opacity="0.8"/>
+  </g>
+
+  <!-- La Désirade (small elongated island far east) -->
+  <g filter="url(#island-shadow)">
+    <ellipse cx="790" cy="218" rx="36" ry="13" fill="#8ec5bf" stroke="#ffffff" stroke-width="1.5"/>
+  </g>
+
+  <!-- Petite-Terre (tiny, near La Désirade) -->
+  <ellipse cx="764" cy="248" rx="8" ry="6" fill="#8ec5bf" stroke="#ffffff" stroke-width="1"/>
+
+  <!-- ===================== CONNECTING LINE ===================== -->
+  <!-- From Sainte-Rose pin ~(464, 248) to Morne-à-l'Eau pin ~(614, 260) -->
+  <path d="M 464 248 Q 538 222 614 260"
+        fill="none"
+        stroke="#e36040"
+        stroke-width="2"
+        stroke-linecap="round"
+        opacity="0.75"/>
+
+  <!-- ===================== PIN: Sainte-Rose ===================== -->
+  <!-- at Basse-Terre north, approx (464, 248) -->
+  <g filter="url(#pin-shadow)">
+    <!-- Outer pulse ring -->
+    <circle cx="464" cy="248" r="22" fill="none" stroke="#e36040" stroke-width="1.5" opacity="0.25"/>
+    <!-- Mid ring -->
+    <circle cx="464" cy="248" r="14" fill="none" stroke="#e36040" stroke-width="1.5" opacity="0.55"/>
+    <!-- White background circle -->
+    <circle cx="464" cy="248" r="8" fill="#ffffff"/>
+    <!-- Coral center -->
+    <circle cx="464" cy="248" r="5" fill="#e36040"/>
+    <!-- Inner white dot -->
+    <circle cx="464" cy="248" r="2" fill="#ffffff"/>
+  </g>
+
+  <!-- ===================== PIN: Morne-à-l'Eau ===================== -->
+  <!-- at Grande-Terre west, approx (614, 260) -->
+  <g filter="url(#pin-shadow)">
+    <circle cx="614" cy="260" r="22" fill="none" stroke="#e36040" stroke-width="1.5" opacity="0.25"/>
+    <circle cx="614" cy="260" r="14" fill="none" stroke="#e36040" stroke-width="1.5" opacity="0.55"/>
+    <circle cx="614" cy="260" r="8" fill="#ffffff"/>
+    <circle cx="614" cy="260" r="5" fill="#e36040"/>
+    <circle cx="614" cy="260" r="2" fill="#ffffff"/>
+  </g>
+
+  <!-- ===================== LABEL: Sainte-Rose ===================== -->
+  <!-- Connector line from pin up-left to label -->
+  <line x1="464" y1="234" x2="500" y2="178" stroke="#c8bdb0" stroke-width="1.2" opacity="0.6"/>
+  <g filter="url(#label-shadow)">
+    <rect x="420" y="136" width="168" height="56" rx="14" ry="14" fill="#ffffff"/>
+    <!-- Coral dot -->
+    <circle cx="445" cy="160" r="6" fill="#e36040"/>
+    <!-- Text: name -->
+    <text x="460" y="155" font-family="Georgia, 'Times New Roman', serif" font-size="15" font-weight="700" fill="#0b2a35">Sainte-Rose</text>
+    <!-- Text: subtitle -->
+    <text x="460" y="174" font-family="-apple-system, system-ui, sans-serif" font-size="11.5" fill="#6e8a90">Basse-Terre</text>
+  </g>
+
+  <!-- ===================== LABEL: Morne-à-l'Eau ===================== -->
+  <!-- Connector line from pin down-right to label -->
+  <line x1="622" y1="268" x2="670" y2="320" stroke="#c8bdb0" stroke-width="1.2" opacity="0.6"/>
+  <g filter="url(#label-shadow)">
+    <rect x="618" y="320" width="200" height="60" rx="14" ry="14" fill="#ffffff"/>
+    <circle cx="643" cy="346" r="6" fill="#e36040"/>
+    <text x="658" y="341" font-family="Georgia, 'Times New Roman', serif" font-size="15" font-weight="700" fill="#0b2a35">Morne-à-l'Eau</text>
+    <text x="658" y="362" font-family="-apple-system, system-ui, sans-serif" font-size="11.5" fill="#6e8a90">Grande-Terre</text>
+  </g>
+</svg>
