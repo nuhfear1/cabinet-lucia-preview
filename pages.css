@@ -18,6 +18,9 @@
 .patient-resource-grid .panel { display: flex; flex-direction: column; align-items: flex-start; }
 .patient-resource-grid .button { margin-top: auto; }
 
+.cabinet-map-visual { display: block; width: 100%; border-radius: 22px; overflow: hidden; }
+.cabinet-map-visual img { display: block; width: 100%; height: auto; max-width: 100%; }
+
 .sainte-rose-photo img { object-fit: contain; background: #f4f7f6; }
 
 .page-photo.morne-a-leau-photo { aspect-ratio: 16/7; min-height: 0; }
