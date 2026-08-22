@@ -17,3 +17,5 @@
 .patient-resource-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; }
 .patient-resource-grid .panel { display: flex; flex-direction: column; align-items: flex-start; }
 .patient-resource-grid .button { margin-top: auto; }
+
+.sainte-rose-photo img { object-fit: contain; background: #f4f7f6; }
