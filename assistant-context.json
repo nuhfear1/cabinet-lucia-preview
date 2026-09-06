@@ -25,7 +25,7 @@
       "id": "cabinet-overview",
       "page": "cabinets.html",
       "title": "Les deux cabinets",
-      "text": "Deux lieux de consultation Retrouvez facilement le bon cabinet. Chaque confirmation de rendez-vous rappellera le lieu exact, le GPS, les conditions d’accès et les informations utiles.",
+      "text": "Deux lieux de consultation Retrouvez facilement le bon cabinet. Consultez les adresses, repérez les deux cabinets sur la carte et ouvrez directement votre itinéraire.",
       "url": "cabinets.html",
       "type": "location"
     },
@@ -33,7 +33,7 @@
       "id": "cabinet-sainte-rose",
       "page": "cabinets.html",
       "title": "Cabinet de Sainte-Rose",
-      "text": "Sainte-Rose Place Tricolore — 88J3+W89\nAv. Sainte-Rose de Lima\n97115 Sainte-Rose, Guadeloupe Ouvrir l’itinéraire",
+      "text": "Cabinet de Sainte-Rose Place Tricolore — 88J3+W89\nAv. Sainte-Rose de Lima\n97115 Sainte-Rose, Guadeloupe Ouvrir l’itinéraire",
       "url": "cabinets.html",
       "type": "location",
       "links": [
@@ -44,11 +44,12 @@
       "id": "doctor-identity",
       "page": "docteure.html",
       "title": "Docteure Lucia Cespedes-Ocampo",
-      "text": "Une présence humaine au centre La cardiologie commence par une relation de confiance. Découvrez l’approche, le parcours et les engagements de la Docteure Lucia Cespedes-Ocampo. Prendre rendez-vous",
+      "text": "Votre cardiologue Dre Lucia Cespedes-Ocampo Cardiologue en Guadeloupe, la Dre Lucia Cespedes-Ocampo reçoit ses patients dans ses cabinets de Morne-à-l’Eau et Sainte-Rose. Demander un rendez-vous Voir les cabinets",
       "url": "docteure.html",
       "type": "identity",
       "links": [
-        "rendez-vous.html"
+        "rendez-vous.html",
+        "cabinets.html"
       ]
     }
   ]
