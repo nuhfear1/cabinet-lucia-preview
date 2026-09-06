@@ -9,44 +9,6 @@
 
   ready(() => {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const header = document.querySelector('.site-header, header');
-
-    const backToTop = document.createElement('button');
-    backToTop.type = 'button';
-    backToTop.className = 'back-to-top';
-    backToTop.setAttribute('aria-label', 'Revenir en haut de la page');
-    backToTop.innerHTML = '↑';
-    document.body.appendChild(backToTop);
-    backToTop.addEventListener('click', () => window.scrollTo({
-      top: 0,
-      behavior: reducedMotion ? 'auto' : 'smooth'
-    }));
-
-    let ticking = false;
-    let headerScrolled = null;
-    let backToTopVisible = null;
-    const updateScrollUi = () => {
-      const top = window.scrollY;
-      const isHeaderScrolled = top > 18;
-      const isBackToTopVisible = top > 560;
-
-      if (headerScrolled !== isHeaderScrolled) {
-        header?.classList.toggle('is-scrolled', isHeaderScrolled);
-        headerScrolled = isHeaderScrolled;
-      }
-      if (backToTopVisible !== isBackToTopVisible) {
-        backToTop.classList.toggle('is-visible', isBackToTopVisible);
-        backToTopVisible = isBackToTopVisible;
-      }
-      ticking = false;
-    };
-    const requestScrollUi = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(updateScrollUi);
-    };
-    window.addEventListener('scroll', requestScrollUi, { passive: true });
-    updateScrollUi();
 
     const heroVisual = document.querySelector('.hero .visual');
     const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
