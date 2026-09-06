@@ -22,25 +22,20 @@
   ensureStyle('navigation-fixes.css?v=20260819-navbar', 'data-navigation-fixes');
   ensureStyle('footer-credit.css?v=20260727-credit', 'data-footer-credit-styles');
 
-  const bytesToBase64 = (buffer) => {
-    const bytes = new Uint8Array(buffer);
-    const chunkSize = 0x8000;
-    let binary = '';
-
-    for (let offset = 0; offset < bytes.length; offset += chunkSize) {
-      binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
-    }
-
-    return btoa(binary);
-  };
-
   const hydrateImages = async () => {
     const singleImages = [...document.querySelectorAll('img[data-base64-src]')];
     const splitImages = [...document.querySelectorAll('img[data-base64-parts]')];
     const binaryImages = [...document.querySelectorAll('img[data-image-src]')];
 
+    binaryImages.forEach((image) => {
+      image.loading = 'lazy';
+      image.decoding = 'async';
+      image.src = image.dataset.imageSrc;
+    });
+
     await Promise.all([
       ...singleImages.map(async (image) => {
+        image.decoding = 'async';
         const response = await fetch(image.dataset.base64Src, { cache: 'force-cache' });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const base64 = (await response.text()).replace(/\s+/g, '');
@@ -48,6 +43,7 @@
         image.src = `data:${mime};base64,${base64}`;
       }),
       ...splitImages.map(async (image) => {
+        image.decoding = 'async';
         const parts = image.dataset.base64Parts
           .split(',')
           .map((part) => part.trim())
@@ -63,14 +59,6 @@
         );
         const mime = image.dataset.imageMime || 'image/webp';
         image.src = `data:${mime};base64,${base64Parts.join('').replace(/\s+/g, '')}`;
-      }),
-      ...binaryImages.map(async (image) => {
-        const source = image.dataset.imageSrc;
-        const mime = image.dataset.imageMime || 'image/jpeg';
-        const response = await fetch(source, { cache: 'no-store' });
-        if (!response.ok) throw new Error(`${source}: HTTP ${response.status}`);
-        const base64 = bytesToBase64(await response.arrayBuffer());
-        image.src = `data:${mime};base64,${base64}`;
       })
     ]);
   };
