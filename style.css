@@ -16,5 +16,20 @@
 
 .morne-a-leau-photo img { object-position: center top; transform: scale(1.04); }
 
-/* Scroll performance: preserve the visual treatment without live backdrop recomposition. */
-.button.outline,.hero .eyebrow,.floating,.appointment,.assistant,.links,.footer-credit-badge,.footer-credit-badge__status{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+/* Scroll performance hardening: loaded with the first stylesheet so the browser
+   never has to switch into the performant rendering mode after first paint. */
+body{background:#f8f6f1!important}
+#site-header{isolation:isolate;transform:translateZ(0);backface-visibility:hidden;will-change:transform}
+.site-header,header{background:#f8f6f1!important;transition:none!important}
+body[data-page="home"] .site-header:not(.is-scrolled){background:linear-gradient(180deg,#041f26,#062b33)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 4px 18px rgba(2,25,31,.08)!important}
+.hero,.page-hero,footer{contain:paint}
+.hero::after,.page-hero::after,footer::after{display:none!important}
+.hero .eyebrow,.floating,.appointment,.assistant,.button.outline,.links,.footer-credit-badge,.footer-credit-badge__status{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.appointment{background:#fff!important}.button.outline{background:#fff!important}.assistant{background:#fff!important}
+.visual{transform:none!important;transition:none!important;box-shadow:0 22px 54px rgba(3,31,38,.16),inset 0 1px 0 rgba(255,255,255,.22)!important}.visual:hover{transform:none!important}
+.button::before,.card::before{display:none!important}
+.button,.card,.location,.page-card,.value-card,.card-icon,.location-photo img,.faq details,.step,.strip-grid div,.brandmark,.brandmark::after{transition:none!important}
+.button:hover,.button:active,.card:hover,.location:hover,.page-card:hover,.value-card:hover,.faq details:hover,.brand:hover .brandmark{transform:none!important}
+.card:hover .card-icon{transform:none!important}.location:hover .location-photo img{transform:none!important}.location:hover .morne-a-leau-photo img{transform:scale(1.04)!important}.step:hover{padding-left:0!important}
+.assistant-btn{transform:translateZ(0)!important;backface-visibility:hidden;will-change:transform;box-shadow:0 10px 26px rgba(239,117,95,.24)!important}.assistant-btn:hover{transform:translateZ(0)!important;box-shadow:0 12px 30px rgba(239,117,95,.28)!important}
+@media(max-width:900px){#site-header .links{background:#fff!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}}
