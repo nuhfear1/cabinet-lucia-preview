@@ -8,22 +8,6 @@
     : fn();
 
   ready(() => {
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    const heroVisual = document.querySelector('.hero .visual');
-    const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    if (heroVisual && canHover && !reducedMotion) {
-      heroVisual.addEventListener('pointermove', (event) => {
-        const rect = heroVisual.getBoundingClientRect();
-        const x = (event.clientX - rect.left) / rect.width - 0.5;
-        const y = (event.clientY - rect.top) / rect.height - 0.5;
-        heroVisual.style.transform = `perspective(1200px) rotateY(${x * 5 - 2}deg) rotateX(${y * -4}deg) translateY(-3px)`;
-      });
-      heroVisual.addEventListener('pointerleave', () => {
-        heroVisual.style.transform = '';
-      });
-    }
-
     const mobileNav = document.querySelector('.links');
     const mobileToggle = document.querySelector('.mobile-toggle');
     const desktopQuery = window.matchMedia('(min-width: 901px)');
