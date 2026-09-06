@@ -45,8 +45,9 @@
 
       <h2>Durées de conservation</h2>
       <h3>Dossier patient</h3>
-      <p>Les données nécessaires à la gestion du dossier patient sont conservées pendant 5 ans en base active à compter de la dernière intervention sur le dossier du patient, puis pendant 15 ans sur un support distinct dans des conditions de sécurité équivalentes.</p>
-      <p>Lorsqu’une nouvelle intervention est réalisée, le point de départ de la période active est cette dernière intervention.</p>
+      <p>Les données nécessaires à la gestion du dossier patient restent en conservation active jusqu’à 5 ans à compter de la dernière intervention sur le dossier. Au-delà de 5 ans et jusqu’à 20 ans, le dossier passe en archive intermédiaire logique sécurisée dans l’environnement PostgreSQL HDS, avec séparation de son état de conservation et maintien des mesures de sécurité applicables.</p>
+      <p>La dernière intervention prise en compte correspond au dernier rendez-vous terminé. En l’absence de rendez-vous terminé, la date de création du dossier sert de référence. Un nouveau rendez-vous terminé postérieur à l’archivage réactive automatiquement le cycle de conservation active.</p>
+      <p>À 20 ans, le dossier est signalé pour revue humaine de rétention. Aucune suppression ni anonymisation automatique du dossier médical n’est effectuée à cette échéance.</p>
       <h3>Demandes publiques isolées</h3>
       <p>Une demande de rendez-vous qui reste dans un statut <code>RECEIVED</code>, <code>CONTACTED</code> ou <code>REJECTED</code>, qui n’a jamais été convertie en patient et n’a jamais été convertie en rendez-vous, est conservée pendant 5 ans à compter de sa dernière modification ou de son dernier traitement. Ses données directement identifiantes sont ensuite anonymisées conformément au mécanisme applicatif.</p>
       <p>Une demande <code>CONVERTED</code> n’est pas traitée par cette règle&nbsp;: les données intégrées au parcours patient relèvent du cycle du dossier patient.</p>
@@ -61,7 +62,7 @@
 
       <h2>Décision automatisée</h2><p>Le site ne prend aucune décision médicale automatisée. L’assistant ne décide ni d’un diagnostic, ni d’un traitement, ni de l’acceptation d’une prise en charge médicale. Toute demande de rendez-vous est examinée par le cabinet avant confirmation.</p>
       <h2>Cookies et traceurs</h2><p>Le site n’utilise actuellement aucun outil publicitaire ni outil de mesure d’audience installé par le cabinet nécessitant un accord préalable. Les services techniques tiers peuvent appliquer leurs propres mécanismes strictement nécessaires à la fourniture de leurs services.</p>
-      <p class="legal-update"><strong>Dernière mise à jour&nbsp;:</strong> 20 août 2026.</p>
+      <p class="legal-update"><strong>Dernière mise à jour&nbsp;:</strong> 6 septembre 2026.</p>
     </div></section>
   </main>
   <div id="site-footer"></div><script src="site.js"></script><script src="app.js?v=20260820-assistant-live"></script>
