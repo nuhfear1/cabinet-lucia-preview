@@ -1,1 +1,21 @@
-(()=>{try{if(document.documentElement.dataset.enhanced)return;document.documentElement.dataset.enhanced='true';const l=document.createElement('link');l.rel='stylesheet';l.href='enhancements.css';document.head.appendChild(l);document.querySelectorAll('.field').forEach(f=>{if(f.querySelector('select'))f.classList.add('field-float')});document.addEventListener('change',e=>{if(e.target.matches('select')){const f=e.target.closest('.field');if(f&&f.animate)f.animate([{transform:'translateY(0)'},{transform:'translateY(-3px)'},{transform:'translateY(0)'}],{duration:260,easing:'ease-out'})}})}catch(e){console.warn('Optional enhancements disabled:',e)}})();
+(() => {
+  try {
+    if (document.documentElement.dataset.enhanced) return;
+    document.documentElement.dataset.enhanced = 'true';
+    document.querySelectorAll('.field').forEach((field) => {
+      if (field.querySelector('select')) field.classList.add('field-float');
+    });
+    document.addEventListener('change', (event) => {
+      if (!event.target.matches('select')) return;
+      const field = event.target.closest('.field');
+      if (field?.animate) {
+        field.animate(
+          [{ transform: 'translateY(0)' }, { transform: 'translateY(-3px)' }, { transform: 'translateY(0)' }],
+          { duration: 260, easing: 'ease-out' }
+        );
+      }
+    });
+  } catch (error) {
+    console.warn('Optional enhancements disabled:', error);
+  }
+})();

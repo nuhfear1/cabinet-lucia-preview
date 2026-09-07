@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const version = '20260820-assistant-live';
+  const version = '20260907-scroll-stability';
   const load = (src) => new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = `${src}?v=${version}`;
@@ -11,9 +11,10 @@
     document.head.appendChild(script);
   });
 
-  const boot = async () => {
+  const boot = () => {
     const ordered = [
       'navigation.js',
+      'enhancements.js',
       'backend-config.js',
       'public-api.js',
       'public-config.js',
@@ -23,7 +24,7 @@
       'premium.js'
     ];
 
-    for (const src of ordered) await load(src);
+    return Promise.all(ordered.map(load));
   };
 
   boot().catch((error) => {
