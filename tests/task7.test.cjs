@@ -174,15 +174,31 @@ test('patient space exposes only local resources and keeps the portal hidden', (
   assert.match(html, /id="patient-portal-link" href="" hidden/);
 });
 
-test('integration scripts load sequentially before consumers', () => {
+test('integration scripts download in parallel and execute in dependency order', () => {
   const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
   const config = source.indexOf("'backend-config.js'");
   const client = source.indexOf("'public-api.js'");
   const publicConfig = source.indexOf("'public-config.js'");
   const assistant = source.indexOf("'assistant.js'");
   const booking = source.indexOf("'booking.js'");
-  assert.match(source, /for \(const src of ordered\) await load\(src\)/);
+  assert.match(source, /script\.async = false/);
+  assert.match(source, /Promise\.all\(ordered\.map\(load\)\)/);
+  assert.doesNotMatch(source, /for \(const src of ordered\) await load\(src\)/);
   assert.ok(config >= 0 && client > config && publicConfig > client && assistant > publicConfig && booking > publicConfig);
+});
+
+test('render-critical shared stylesheets are present in every document head', () => {
+  const version = '20260907-scroll-stability';
+  const sharedStyles = ['ui.css', 'premium.css', 'navigation-fixes.css', 'footer-credit.css', 'enhancements.css'];
+  for (const filename of fs.readdirSync(root).filter((file) => file.endsWith('.html'))) {
+    const html = fs.readFileSync(path.join(root, filename), 'utf8');
+    const head = html.match(/<head>([\s\S]*?)<\/head>/)?.[1] || '';
+    for (const stylesheet of sharedStyles) {
+      assert.match(head, new RegExp(`${stylesheet.replace('.', '\\.')}\\?v=${version}`), `${filename} must preload ${stylesheet}`);
+    }
+  }
+  assert.doesNotMatch(fs.readFileSync(path.join(root, 'site.js'), 'utf8'), /createElement\(['"]link['"]\)/);
+  assert.doesNotMatch(fs.readFileSync(path.join(root, 'enhancements.js'), 'utf8'), /createElement\(['"]link['"]\)/);
 });
 
 test('assistant client integration is fail-safe and cache versions stay aligned', () => {
@@ -201,7 +217,7 @@ test('assistant client integration is fail-safe and cache versions stay aligned'
     assert.match(recipe, new RegExp(visibilityCheck));
   }
 
-  const version = '20260820-assistant-live';
+  const version = '20260907-scroll-stability';
   assert.match(fs.readFileSync(path.join(root, 'app.js'), 'utf8'), new RegExp(`const version = '${version}'`));
   for (const filename of fs.readdirSync(root).filter((file) => file.endsWith('.html'))) {
     const html = fs.readFileSync(path.join(root, filename), 'utf8');
