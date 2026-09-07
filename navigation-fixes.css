@@ -194,3 +194,30 @@ body[data-page="home"] .site-header:not(.is-scrolled) .mobile-toggle{
   .cards{grid-template-columns:1fr}
   .cards .card h3,.page-card h3{font-size:1.28rem}
 }
+/* Final interaction stability */
+.button,
+.links a,
+.card,
+.location,
+.page-card,
+.value-card,
+.appointment,
+.assistant-btn {
+  transition: none !important;
+}
+
+.button:hover,
+.button:active,
+.links a:hover,
+.card:hover,
+.location:hover,
+.page-card:hover,
+.value-card:hover {
+  transform: none !important;
+}
+
+.assistant-btn,
+.assistant-btn:hover,
+.assistant-btn:active {
+  transform: translateZ(0) !important;
+}
