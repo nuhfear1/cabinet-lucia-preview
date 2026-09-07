@@ -194,17 +194,24 @@ async function waitForChromeCdp({ chrome, binary, commandVersion, userDataDir, o
   ].join('\n'));
 }
 
-async function launchChrome({ candidates = findChromeCandidates(), timeoutMs = 20000, fetchTimeoutMs = 1000 } = {}) {
+async function launchChrome({
+  candidates = findChromeCandidates(),
+  timeoutMs = 20000,
+  fetchTimeoutMs = 1000,
+  disableGpu = true
+} = {}) {
   if (!candidates.length) throw new Error('Navigateur Chromium introuvable sur le système de recette.');
   const diagnostics = [];
   for (const binary of candidates) {
     const commandVersion = readBrowserVersion(binary);
     const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cabinet-lucia-chrome-'));
-    const chrome = spawn(binary, [
-      '--headless', '--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu',
+    const chromeArguments = [
+      '--headless', '--no-sandbox', '--disable-dev-shm-usage',
       '--no-first-run', '--no-default-browser-check', '--remote-debugging-address=127.0.0.1',
       '--remote-debugging-port=0', `--user-data-dir=${userDataDir}`, 'about:blank'
-    ], { stdio: ['ignore', 'pipe', 'pipe'] });
+    ];
+    if (disableGpu) chromeArguments.splice(3, 0, '--disable-gpu');
+    const chrome = spawn(binary, chromeArguments, { stdio: ['ignore', 'pipe', 'pipe'] });
     const output = observeChrome(chrome);
     try {
       const cdp = await waitForChromeCdp({

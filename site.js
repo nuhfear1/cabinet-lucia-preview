@@ -8,68 +8,80 @@
     return;
   }
 
-  const ensureStyle = (href, dataAttribute) => {
-    if (document.querySelector(`link[${dataAttribute}]`)) return;
-    const stylesheet = document.createElement('link');
-    stylesheet.rel = 'stylesheet';
-    stylesheet.href = href;
-    stylesheet.setAttribute(dataAttribute, 'true');
-    document.head.appendChild(stylesheet);
-  };
+  const hydrateImages = () => {
+    const images = [...document.querySelectorAll(
+      'img[data-base64-src], img[data-base64-parts], img[data-image-src]'
+    )];
+    if (!images.length) return;
 
-  ensureStyle('ui.css?v=20260720-premium', 'data-ui-styles');
-  ensureStyle('premium.css?v=20260720-premium', 'data-premium-styles');
-  ensureStyle('navigation-fixes.css?v=20260819-navbar', 'data-navigation-fixes');
-  ensureStyle('footer-credit.css?v=20260727-credit', 'data-footer-credit-styles');
+    const queued = new WeakSet();
+    const queue = [];
+    let running = false;
 
-  const hydrateImages = async () => {
-    const singleImages = [...document.querySelectorAll('img[data-base64-src]')];
-    const splitImages = [...document.querySelectorAll('img[data-base64-parts]')];
-    const binaryImages = [...document.querySelectorAll('img[data-image-src]')];
-
-    binaryImages.forEach((image) => {
-      // These images sit in the sections reached by the first continuous scroll.
-      // Let the browser fetch/decode them before scrolling starts instead of
-      // paying the native lazy-loader's decode/upload cost at section entry.
-      image.loading = 'eager';
+    const hydrate = async (image) => {
       image.decoding = 'async';
-      image.src = image.dataset.imageSrc;
-      image.decode?.().catch(() => {});
-    });
-
-    await Promise.all([
-      ...singleImages.map(async (image) => {
-        image.decoding = 'async';
+      if (image.dataset.imageSrc) {
+        image.loading = 'eager';
+        image.fetchPriority = image.getBoundingClientRect().top <= innerHeight ? 'high' : 'low';
+        image.src = image.dataset.imageSrc;
+      } else if (image.dataset.base64Src) {
         const response = await fetch(image.dataset.base64Src, { cache: 'force-cache' });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const base64 = (await response.text()).replace(/\s+/g, '');
         const mime = image.dataset.imageMime || 'image/webp';
         image.src = `data:${mime};base64,${base64}`;
-      }),
-      ...splitImages.map(async (image) => {
-        image.decoding = 'async';
+      } else {
         const parts = image.dataset.base64Parts
           .split(',')
           .map((part) => part.trim())
           .filter(Boolean);
-        const responses = await Promise.all(
-          parts.map((part) => fetch(part, { cache: 'force-cache' }))
-        );
+        const responses = await Promise.all(parts.map((part) => fetch(part, { cache: 'force-cache' })));
         responses.forEach((response) => {
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
         });
-        const base64Parts = await Promise.all(
-          responses.map((response) => response.text())
-        );
+        const base64Parts = await Promise.all(responses.map((response) => response.text()));
         const mime = image.dataset.imageMime || 'image/webp';
         image.src = `data:${mime};base64,${base64Parts.join('').replace(/\s+/g, '')}`;
-      })
-    ]);
+      }
+      await image.decode?.().catch(() => {});
+    };
+
+    const drain = async () => {
+      if (running) return;
+      running = true;
+      while (queue.length) {
+        const image = queue.shift();
+        try {
+          await hydrate(image);
+        } catch (error) {
+          console.error('Impossible de charger une image locale du site.', error);
+        }
+      }
+      running = false;
+    };
+
+    const enqueue = (image) => {
+      if (queued.has(image)) return;
+      queued.add(image);
+      queue.push(image);
+      setTimeout(drain, 0);
+    };
+
+    if (!('IntersectionObserver' in window)) {
+      images.forEach(enqueue);
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        observer.unobserve(entry.target);
+        enqueue(entry.target);
+      });
+    }, { rootMargin: '1600px 0px' });
+    images.forEach((image) => observer.observe(image));
   };
 
-  hydrateImages().catch((error) => {
-    console.error('Impossible de charger une image locale du site.', error);
-  });
+  hydrateImages();
 
   const main = document.querySelector('main');
   if (main && !main.id) main.id = 'main-content';

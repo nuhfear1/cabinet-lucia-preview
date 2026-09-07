@@ -7,7 +7,8 @@
     "test": "node --test tests/*.test.cjs",
     "verify": "npm run build:assistant-context && npm test && node scripts/verify-static-site.cjs && git diff --exit-code -- assistant-context.json",
     "test:browser": "node -r ./scripts/ignore-rm-enotempty.cjs scripts/technical-recipe.cjs && node -r ./scripts/ignore-rm-enotempty.cjs scripts/assistant-final-recipe.cjs",
-    "test:scroll": "node -r ./scripts/ignore-rm-enotempty.cjs scripts/scroll-performance.cjs"
+    "test:scroll": "node -r ./scripts/ignore-rm-enotempty.cjs scripts/scroll-performance.cjs",
+    "test:early-scroll": "node -r ./scripts/ignore-rm-enotempty.cjs scripts/early-scroll-diagnostic.cjs"
   },
   "engines": {
     "node": ">=22"

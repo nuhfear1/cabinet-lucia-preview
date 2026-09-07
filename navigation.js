@@ -43,10 +43,5 @@
       summary.setAttribute('aria-expanded', String(detail.open));
       detail.addEventListener('toggle', () => summary.setAttribute('aria-expanded', String(detail.open)));
     });
-
-    const script = document.createElement('script');
-    script.src = 'enhancements.js?v=20260717b';
-    script.defer = true;
-    document.body.appendChild(script);
   });
 })();
