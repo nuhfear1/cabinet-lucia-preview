@@ -28,9 +28,13 @@
     const binaryImages = [...document.querySelectorAll('img[data-image-src]')];
 
     binaryImages.forEach((image) => {
-      image.loading = 'lazy';
+      // These images sit in the sections reached by the first continuous scroll.
+      // Let the browser fetch/decode them before scrolling starts instead of
+      // paying the native lazy-loader's decode/upload cost at section entry.
+      image.loading = 'eager';
       image.decoding = 'async';
       image.src = image.dataset.imageSrc;
+      image.decode?.().catch(() => {});
     });
 
     await Promise.all([
