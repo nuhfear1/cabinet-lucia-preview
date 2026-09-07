@@ -227,3 +227,36 @@ body[data-page="home"] .site-header:not(.is-scrolled) .mobile-toggle{
 .assistant-btn:active {
   transform: translateZ(0) !important;
 }
+
+/* Final interaction stability: prevent pointer hover effects from
+   creating paint/compositor work while elements pass under a stationary
+   pointer during scrolling. Loaded after premium.css. */
+
+.button,
+.links a,
+.card,
+.location,
+.page-card,
+.value-card,
+.appointment,
+.assistant-btn {
+  transition: none !important;
+}
+
+.button:hover,
+.button:active,
+.links a:hover,
+.card:hover,
+.location:hover,
+.page-card:hover,
+.value-card:hover {
+  transform: none !important;
+}
+
+/* Keep the assistant button on its stable compositor layer without
+   allowing hover movement. */
+.assistant-btn,
+.assistant-btn:hover,
+.assistant-btn:active {
+  transform: translateZ(0) !important;
+}
