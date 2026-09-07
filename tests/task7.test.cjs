@@ -134,10 +134,40 @@ test('booking markup matches the final backend contract', () => {
   for (const field of ['firstName', 'lastName', 'phone', 'email', 'date', 'consent']) {
     assert.match(html, new RegExp(`name="${field}"`));
   }
-  assert.match(html, /value="MORNE_A_LEAU"/);
-  assert.match(html, /value="SAINTE_ROSE"/);
+  assert.match(html, /value="MORNE_A_LEAU" selected/);
+  assert.doesNotMatch(html, /SAINTE_ROSE|Sainte-Rose/);
+  const reasonSelect = html.match(/<select id="reason"[\s\S]*?<\/select>/)?.[0] || '';
+  const reasons = [...reasonSelect.matchAll(/<option value="([^"]*)"/g)].map((match) => match[1]);
+  assert.deepEqual(reasons, [
+    '',
+    'Première consultation',
+    'Suivi cardiologique',
+    'Électrocardiogramme',
+    'Échographie cardiaque',
+    'Holter 24h',
+    'Holter longue durée',
+    'MAPA',
+    'Polygraphie nocturne'
+  ]);
+  assert.doesNotMatch(html, /Examen prescrit/);
+  const slots = [...html.matchAll(/name="slot" value="([0-9:]+)"/g)].map((match) => match[1]);
+  assert.deepEqual(slots, [
+    '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+    '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
+  ]);
+  assert.doesNotMatch(html, /name="slot" value="(?:12:00|12:30|17:00)"/);
   assert.match(html, /type="checkbox" required/);
   assert.match(html, /name="website"/);
+});
+
+
+test('public content exposes the final hero, identity and operational cabinet', () => {
+  const pages = fs.readdirSync(root).filter((file) => file.endsWith('.html'));
+  const publicHtml = pages.map((file) => fs.readFileSync(path.join(root, file), 'utf8')).join('\n');
+  assert.match(fs.readFileSync(path.join(root, 'index.html'), 'utf8'), /<h1>Votre cabinet de CARDIOLOGIE en Guadeloupe\.<\/h1>/);
+  assert.doesNotMatch(publicHtml, /Dre Lucia Cespedes-Ocampo/);
+  assert.doesNotMatch(fs.readFileSync(path.join(root, 'rendez-vous.html'), 'utf8'), /Sainte-Rose|SAINTE_ROSE/);
+  assert.doesNotMatch(fs.readFileSync(path.join(root, 'cabinets.html'), 'utf8'), /carte-guadeloupe|cabinet-sainte-rose|Sainte-Rose/);
 });
 
 test('appointment success requires the complete canonical response', () => {

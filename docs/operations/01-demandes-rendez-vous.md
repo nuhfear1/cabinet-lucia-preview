@@ -38,7 +38,7 @@ Traiter chaque demande reçue depuis le site public de manière cohérente, sans
 
 ## Modèle de premier contact
 
-> Bonjour, Cabinet de la Dre Lucia Cespedes-Ocampo. Nous avons bien reçu votre demande de rendez-vous pour [motif]. La date indiquée était une préférence. Nous vous contactons afin de vérifier les informations et de vous proposer un créneau disponible.
+> Bonjour, Cabinet de Lucia Cespedes-Ocampo. Nous avons bien reçu votre demande de rendez-vous pour [motif]. La date indiquée était une préférence. Nous vous contactons afin de vérifier les informations et de vous proposer un créneau disponible.
 
 ## Avant confirmation
 

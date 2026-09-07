@@ -111,7 +111,7 @@
           <a class="brand" href="index.html" aria-label="Accueil — Cabinet de cardiologie de la Docteure Lucia Cespedes-Ocampo">
             <span class="brandmark" aria-hidden="true">♥</span>
             <span>
-              <strong>Dr Lucia Cespedes-Ocampo</strong>
+              <strong>Lucia Cespedes-Ocampo</strong>
               <small>Cabinet de cardiologie</small>
             </span>
           </a>
@@ -136,7 +136,7 @@
         <div class="container">
           <div class="footer-grid">
             <div>
-              <h3>Dr Lucia Cespedes-Ocampo</h3>
+              <h3>Lucia Cespedes-Ocampo</h3>
               <p>Cabinet de cardiologie en Guadeloupe. Site en cours de finalisation avant sa mise en ligne définitive.</p>
             </div>
             <div>

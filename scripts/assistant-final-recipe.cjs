@@ -119,9 +119,9 @@ async function runViewport(client, viewport) {
     });
 
     const known = await ask({
-      question: 'Où se trouve le cabinet de Sainte-Rose ?',
-      mock: enabled('answer', 'Le cabinet de Sainte-Rose se trouve à **Place Tricolore - 88J3+W89, Av. Sainte-Rose de Lima, 97115 Sainte-Rose, Guadeloupe.**'),
-      expected: 'Place Tricolore - 88J3+W89'
+      question: 'Où se trouve le cabinet de Morne-à-l’Eau ?',
+      mock: enabled('answer', 'Le cabinet se trouve au **4127 Route de Abdon Saman – Perrin, 97111 Morne-à-l’Eau. Route du nouveau CHU direction Perrin. Deuxième dos d’âne, face à l’épicerie Gamby.**'),
+      expected: '4127 Route de Abdon Saman – Perrin'
     });
     assert(known.expected && known.noRawBold, 'réponse connue ou suppression ** incorrecte');
 
