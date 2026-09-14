@@ -198,8 +198,10 @@
         result.textContent = 'Votre demande a bien été transmise au cabinet. Elle sera examinée avant confirmation du rendez-vous.';
         submissionKey = window.CabinetLuciaApi?.createIdempotencyKey?.() || `booking-${Date.now()}`;
         form.querySelectorAll('input, select, button').forEach((control) => { control.disabled = true; });
-      } catch {
-        result.textContent = 'La demande n’a pas pu être transmise. Aucune confirmation n’a été enregistrée. Vous pouvez réessayer.';
+      } catch (error) {
+        result.textContent = error?.status === 409 && typeof error.message === 'string'
+          ? `${error.message} Votre demande n’est pas confirmée.`
+          : 'La demande n’a pas pu être transmise. Aucune confirmation n’a été enregistrée. Vous pouvez réessayer.';
         submitButton.disabled = false;
       } finally {
         inFlight = false;

@@ -26,7 +26,6 @@ Le flux public de demande de rendez-vous a été validé de bout en bout avec de
 - Checklist de connexion et d’exploitation : `FINAL_CONNECTION_CHECKLIST.md`
 - Procédure de déploiement : `TASK7_DEPLOYMENT.md`
 - Retour arrière : `TASK7_ROLLBACK.md`
-- Blocages juridiques factuels restants : `LEGAL_FINAL_BLOCKERS.md`
 
 ## Sécurité de recette
 

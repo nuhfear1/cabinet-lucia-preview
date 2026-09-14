@@ -226,7 +226,7 @@ async function checkNavigationAndAssistant(client, failures) {
         typingAppeared,
         typingRemoved: !messages.querySelector('.assistant-typing'),
         assistantAppeared,
-        expectedAnswer: Boolean(answer?.textContent.includes('Les adresses et itinéraires sont regroupés sur la page des cabinets.')),
+        expectedAnswer: Boolean(answer?.textContent.includes('L’adresse et l’itinéraire sont regroupés sur la page du cabinet.')),
         displayVisible: style?.display !== 'none',
         visibilityVisible: style?.visibility !== 'hidden',
         opacityVisible: style?.opacity !== '0',
