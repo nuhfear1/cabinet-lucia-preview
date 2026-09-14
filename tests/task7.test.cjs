@@ -273,7 +273,7 @@ test('assistant client integration is fail-safe and cache versions stay aligned'
     assert.match(recipe, new RegExp(visibilityCheck));
   }
 
-  const version = '20260907-scroll-stability';
+  const version = '20260914-booking-selection-fix';
   assert.match(fs.readFileSync(path.join(root, 'app.js'), 'utf8'), new RegExp(`const version = '${version}'`));
   for (const filename of fs.readdirSync(root).filter((file) => file.endsWith('.html'))) {
     const html = fs.readFileSync(path.join(root, filename), 'utf8');
