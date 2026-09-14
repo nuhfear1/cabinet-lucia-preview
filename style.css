@@ -33,3 +33,17 @@ body[data-page="home"] .site-header:not(.is-scrolled){background:linear-gradient
 .card:hover .card-icon{transform:none!important}.location:hover .location-photo img{transform:none!important}.location:hover .morne-a-leau-photo img{transform:scale(1.04)!important}.step:hover{padding-left:0!important}
 .assistant-btn{transform:translateZ(0)!important;backface-visibility:hidden;will-change:transform;box-shadow:0 10px 26px rgba(239,117,95,.24)!important}.assistant-btn:hover{transform:translateZ(0)!important;box-shadow:0 12px 30px rgba(239,117,95,.28)!important}
 @media(max-width:900px){#site-header .links{background:#fff!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}}
+
+body[data-page="home"] #cabinets .panel { background: #fff; border: 1px solid #dce4e5; box-shadow: 0 12px 32px rgba(16,59,69,.05); border-radius: 28px; padding: 34px; }
+body[data-page="home"] #cabinets .image-placeholder { min-height: 360px; border-radius: 28px; background: linear-gradient(145deg,#eef5f3,#dcebe7); border: 1px solid #dce4e5; display: flex; align-items: flex-end; padding: 24px; color: #28777e; font-weight: 800; }
+body[data-page="home"] #cabinets .page-photo { position: relative; padding: 0; overflow: hidden; background: #dcebe7; }
+body[data-page="home"] #cabinets .page-photo img { display: block; width: 100%; height: 100%; min-height: 360px; object-fit: cover; object-position: center; }
+body[data-page="home"] #cabinets .page-photo.morne-a-leau-photo { aspect-ratio: 16/7; min-height: 0; }
+body[data-page="home"] #cabinets .page-photo.morne-a-leau-photo img { min-height: 0; }
+@media (max-width: 620px) {
+  body[data-page="home"] #cabinets .panel { padding: 24px; }
+  body[data-page="home"] #cabinets .image-placeholder { min-height: 260px; }
+  body[data-page="home"] #cabinets .page-photo img { min-height: 260px; }
+  body[data-page="home"] #cabinets .page-photo.morne-a-leau-photo,
+  body[data-page="home"] #cabinets .page-photo.morne-a-leau-photo img { min-height: 0; }
+}
