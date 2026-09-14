@@ -11,12 +11,12 @@
   const knowledge = [
     { test: /(urgence|urgent|douleur.*poitrine|mal.*poitrine|malaise|inconscient|respir|essouff|saignement)/, text: responses.emergency, status: 'emergency' },
     { test: /(diagnostic|symptome|traitement|medicament|dose|ordonnance.*modifier|resultat|analyse|interpret|mon ecg|mon echo|ma tension)/, text: responses.medical_refusal, status: 'medical_refusal' },
-    { test: /(rendez-vous|rdv|reserver|reservation|creneau|disponibilite)/, text: 'Vous pouvez transmettre une demande depuis la page de rendez-vous.', link: ['rendez-vous.html', 'Prendre rendez-vous'] },
+    { test: /(rendez-vous|rdv|reserver|reservation|creneau|disponibilite)/, text: 'Les disponibilités réelles sont affichées uniquement sur la page de rendez-vous. Je ne peux inventer aucune date ni aucune heure.', link: ['rendez-vous.html', 'Prendre rendez-vous'] },
     { test: /(espace patient|preparer.*consultation|preparer.*venue|document|apporter)/, text: 'L’espace patient rassemble les informations utiles pour préparer votre consultation.', link: ['espace-patient.html', 'Accéder à l’espace patient'] },
     { test: /(adresse|cabinet|itineraire|gps|morne|parking|acces)/, text: 'L’adresse et l’itinéraire sont regroupés sur la page du cabinet.', link: ['cabinets.html', 'Trouver le cabinet'] },
     { test: /(ecg|electrocardiogramme)/, text: 'Une fiche explique comment se déroule un ECG.', link: ['article-ecg.html', 'Comprendre l’ECG'] },
     { test: /(echographie|echo cardiaque)/, text: 'Une fiche explique comment préparer une échographie cardiaque.', link: ['article-echographie.html', 'Préparer une échographie'] },
-    { test: /(prevention|tension|conseil|information)/, text: 'Les ressources de prévention sont disponibles sur le site.', link: ['prevention.html', 'Conseils de prévention'] }
+    { test: /(prevention|tension|conseil|information)/, text: 'Les ressources d’information sont disponibles sur le site.', link: ['prevention.html', 'Information'] }
   ];
 
   const init = () => {
@@ -78,7 +78,7 @@
       panel.hidden = false;
       panel.classList.add('open');
       openButton.setAttribute('aria-expanded', 'true');
-      if (!messages.children.length) append('bot', 'Bonjour. Je peux vous orienter vers les rendez-vous, les cabinets, l’espace patient et les informations pratiques du site.');
+      if (!messages.children.length) append('bot', 'Bonjour. Je peux vous orienter vers la prise de rendez-vous, Perrin, l’espace patient et les informations pratiques du site.');
       scrollToLatestMessage();
       input.focus();
     };

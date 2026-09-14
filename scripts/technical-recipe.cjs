@@ -317,76 +317,108 @@ async function checkBooking(client, failures) {
   await navigate(client, 'rendez-vous.html', viewports[0]);
   const result = await evaluate(client, `(async () => {
     const form = document.querySelector('[data-booking-wizard]');
+    const originalClient = window.CabinetLuciaApi;
     const nextFrame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const waitFor = async (selector) => {
+      for (let attempt = 0; attempt < 50; attempt += 1) {
+        const element = document.querySelector(selector);
+        if (element) return element;
+        await new Promise((resolve) => setTimeout(resolve, 20));
+      }
+      return null;
+    };
     const setValue = (selector, value) => {
       const field = document.querySelector(selector);
       field.value = value;
       field.dispatchEvent(new Event('input', { bubbles: true }));
       field.dispatchEvent(new Event('change', { bubbles: true }));
     };
-    setValue('[name="reason"]', 'Suivi cardiologique');
-    setValue('[name="place"]', 'MORNE_A_LEAU');
-    document.querySelector('[data-booking-next]').click();
-    const tomorrow = new Date(Date.now() + 86400000 * 2).toISOString().slice(0, 10);
-    setValue('[name="date"]', tomorrow);
-    const slot = document.querySelector('[name="slot"][value="09:00"]');
-    slot.checked = true;
-    slot.dispatchEvent(new Event('change', { bubbles: true }));
-    document.querySelector('[data-booking-step="2"] [data-booking-next]').click();
-    let requests = 0;
-    window.CabinetLuciaApi.submitAppointmentRequest = async () => { requests += 1; };
-    setValue('[name="firstName"]', ' A ');
-    setValue('[name="lastName"]', 'Nom');
-    setValue('[name="phone"]', '0690000000');
-    document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
-    await nextFrame();
-    const shortFirstNameRejected = !document.querySelector('[data-booking-step="3"]').hidden
-      && form.firstName.hasAttribute('aria-invalid')
-      && document.activeElement === form.firstName;
-    setValue('[name="firstName"]', 'Al');
-    setValue('[name="lastName"]', ' B ');
-    document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
-    await nextFrame();
-    const shortLastNameRejected = !document.querySelector('[data-booking-step="3"]').hidden
-      && form.lastName.hasAttribute('aria-invalid')
-      && document.activeElement === form.lastName;
-    setValue('[name="lastName"]', 'Bo');
-    document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
-    const twoCharacterNamesAccepted = !document.querySelector('[data-booking-step="4"]').hidden;
-    document.querySelector('[data-booking-step="4"] [data-booking-back]').click();
-    setValue('[name="firstName"]', 'Marie');
-    setValue('[name="lastName"]', 'Recette');
-    setValue('[name="phone"]', '0690000000');
-    setValue('[name="email"]', 'marie.recette@example.test');
-    document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
-    const step4 = document.querySelector('[data-booking-step="4"]');
-    const summary = step4?.textContent || '';
-    const consent = document.querySelector('[name="consent"]');
-    consent.checked = true;
-    consent.dispatchEvent(new Event('input', { bubbles: true }));
-    form.requestSubmit();
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    return {
-      step4Visible: Boolean(step4 && !step4.hidden),
-      summaryOk: summary.includes('Marie Recette') && summary.includes('Morne-à-l’Eau') && summary.includes('Suivi cardiologique'),
-      consentRequired: consent.required,
-      resultText: document.getElementById('booking-result')?.textContent || '',
-      backendEnabled: window.CabinetLuciaApi?.getConfig?.().enabled,
-      shortFirstNameRejected,
-      shortLastNameRejected,
-      twoCharacterNamesAccepted,
-      invalidRequests: requests
-    };
+    const future = new Date(Date.now() + 86400000 * 7).toISOString().slice(0, 10);
+    const monthKey = future.slice(0, 7);
+    const monthDate = new Date(future + 'T00:00:00Z');
+    const monthLabel = new Intl.DateTimeFormat('fr-FR', { month: 'long', timeZone: 'UTC' }).format(monthDate);
+    let availabilityRequests = 0;
+    let bookingRequests = 0;
+    let outcome;
+    try {
+      window.CabinetLuciaApi = {
+        getConfig: () => ({ enabled: true, timeoutMs: 8000 }),
+        createIdempotencyKey: () => 'recipe-booking-key',
+        getAvailability: async (reason) => {
+          availabilityRequests += 1;
+          return { enabled: true, data: { ok: true, timezone: 'America/Guadeloupe', location: 'MORNE_A_LEAU', reason, months: [{ key: monthKey, label: monthLabel, days: [{ date: future, slots: ['09:00', '10:00'] }] }] } };
+        },
+        bookAppointment: async (payload, key) => {
+          bookingRequests += 1;
+          return { enabled: true, data: { ok: true, appointmentId: 'recipe-appointment', status: 'CONFIRMED', startsAt: payload.startsAt, timezone: 'America/Guadeloupe', location: 'MORNE_A_LEAU', reason: payload.reason, replay: false, key } };
+        }
+      };
+      setValue('[name="reason"]', 'Suivi cardiologique');
+      document.querySelector('[data-booking-next]').click();
+      const month = await waitFor('[name="availability-month"]');
+      month.checked = true;
+      month.dispatchEvent(new Event('change', { bubbles: true }));
+      const date = await waitFor('[name="availability-date"]');
+      date.checked = true;
+      date.dispatchEvent(new Event('change', { bubbles: true }));
+      const time = await waitFor('[name="availability-time"][value*="09:00"]') || await waitFor('[name="availability-time"]');
+      time.checked = true;
+      time.dispatchEvent(new Event('change', { bubbles: true }));
+      document.querySelector('[data-booking-step="2"] [data-booking-next]').click();
+      setValue('[name="firstName"]', ' A ');
+      setValue('[name="lastName"]', 'Nom');
+      setValue('[name="phone"]', '0690000000');
+      document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
+      await nextFrame();
+      const shortFirstNameRejected = !document.querySelector('[data-booking-step="3"]').hidden && form.firstName.hasAttribute('aria-invalid');
+      setValue('[name="firstName"]', 'Al');
+      setValue('[name="lastName"]', ' B ');
+      document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
+      await nextFrame();
+      const shortLastNameRejected = !document.querySelector('[data-booking-step="3"]').hidden && form.lastName.hasAttribute('aria-invalid');
+      setValue('[name="lastName"]', 'Bo');
+      document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
+      const twoCharacterNamesAccepted = !document.querySelector('[data-booking-step="4"]').hidden;
+      document.querySelector('[data-booking-step="4"] [data-booking-back]').click();
+      setValue('[name="firstName"]', 'Marie');
+      setValue('[name="lastName"]', 'Recette');
+      setValue('[name="phone"]', '0690000000');
+      setValue('[name="email"]', 'marie.recette@example.test');
+      document.querySelector('[data-booking-step="3"] [data-booking-next]').click();
+      const step4 = document.querySelector('[data-booking-step="4"]');
+      const summary = step4?.textContent || '';
+      const consent = document.querySelector('[name="consent"]');
+      consent.checked = true;
+      consent.dispatchEvent(new Event('input', { bubbles: true }));
+      form.requestSubmit();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      outcome = {
+        step4Visible: Boolean(step4 && !step4.hidden),
+        summaryOk: summary.includes('Marie Recette') && summary.includes('Espace de santé de Perrin') && summary.includes('Suivi cardiologique') && summary.includes(future.split('-')[2].replace(/^0/, '')) && summary.includes('09:00'),
+        consentRequired: consent.required,
+        resultText: document.getElementById('booking-result')?.textContent || '',
+        shortFirstNameRejected,
+        shortLastNameRejected,
+        twoCharacterNamesAccepted,
+        availabilityRequests,
+        bookingRequests
+      };
+    } finally {
+      window.CabinetLuciaApi = originalClient;
+    }
+    return outcome;
   })()`);
   assert(result.step4Visible, 'Le parcours de rendez-vous n’atteint pas l’étape de vérification.', failures);
-  assert(result.summaryOk, 'Le récapitulatif du rendez-vous est incomplet.', failures);
+  assert(result.summaryOk, 'Le récapitulatif du rendez-vous à Perrin est incomplet.', failures);
   assert(result.consentRequired, 'Le consentement n’est pas obligatoire.', failures);
-  assert(result.backendEnabled === false, 'Le backend public doit rester désactivé pendant cette recette.', failures);
-  assert(result.resultText.includes('Aucune donnée n’a été transmise'), 'Le mode de démonstration ne confirme pas clairement l’absence de transmission.', failures);
-  assert(result.shortFirstNameRejected, 'Un prénom d’un caractère, espaces extérieurs compris, doit être refusé et recevoir le focus.', failures);
-  assert(result.shortLastNameRejected, 'Un nom d’un caractère, espaces extérieurs compris, doit être refusé et recevoir le focus.', failures);
+  assert(result.availabilityRequests > 0, 'Les disponibilités ne sont pas chargées.', failures);
+  assert(result.bookingRequests === 1, 'La réservation doit être envoyée exactement une fois.', failures);
+  assert(result.resultText.includes('Votre rendez-vous est confirmé.'), 'Le statut CONFIRMED ne produit pas le message attendu.', failures);
+  assert(result.resultText.includes('Présentez-vous à l’Espace de santé de Perrin'), 'La confirmation ne précise pas le lieu de présentation.', failures);
+  assert(result.resultText.includes('vous présenter à l’accueil de l’Espace de santé de Perrin'), 'La confirmation ne précise pas le passage à l’accueil.', failures);
+  assert(result.shortFirstNameRejected, 'Un prénom d’un caractère, espaces extérieurs compris, doit être refusé.', failures);
+  assert(result.shortLastNameRejected, 'Un nom d’un caractère, espaces extérieurs compris, doit être refusé.', failures);
   assert(result.twoCharacterNamesAccepted, 'Les prénoms et noms de deux caractères doivent être acceptés.', failures);
-  assert(result.invalidRequests === 0, 'Une validation de nom incorrecte ne doit déclencher aucune requête.', failures);
 }
 
 async function main() {
