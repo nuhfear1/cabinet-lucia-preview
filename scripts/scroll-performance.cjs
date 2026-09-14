@@ -3,7 +3,7 @@ const { cleanupChrome, createCdpTarget, launchChrome } = require('./chrome-launc
 
 const baseUrl = process.env.PUBLIC_SITE_URL || 'http://127.0.0.1:4173';
 const reportPath = process.env.SCROLL_PERF_REPORT || 'scroll-performance.json';
-const pages = ['index.html', 'docteure.html', 'consultations.html', 'prevention.html', 'cabinets.html', 'rendez-vous.html'];
+const pages = ['index.html', 'consultations.html', 'prevention.html', 'cabinets.html', 'rendez-vous.html'];
 const viewports = [
   { name: 'desktop', width: 1440, height: 1000, mobile: false },
   { name: 'mobile', width: 390, height: 844, mobile: true }

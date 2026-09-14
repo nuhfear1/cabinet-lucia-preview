@@ -28,18 +28,6 @@
       "text": "Lieu de consultation Retrouvez facilement le cabinet. Consultez l’adresse et ouvrez directement votre itinéraire.",
       "url": "cabinets.html",
       "type": "location"
-    },
-    {
-      "id": "doctor-identity",
-      "page": "docteure.html",
-      "title": "Docteure Lucia Cespedes-Ocampo",
-      "text": "Votre cardiologue Lucia Cespedes-Ocampo Cardiologue en Guadeloupe, Lucia Cespedes-Ocampo reçoit ses patients à l’Espace de santé de Perrin. Prendre rendez-vous Voir le cabinet",
-      "url": "docteure.html",
-      "type": "identity",
-      "links": [
-        "rendez-vous.html",
-        "cabinets.html"
-      ]
     }
   ]
 }
