@@ -118,7 +118,6 @@
           <button class="mobile-toggle" type="button" aria-label="Ouvrir le menu" aria-controls="main-navigation" aria-expanded="false">☰</button>
           <nav class="links" id="main-navigation" aria-label="Navigation principale">
             <a data-nav="home" href="index.html">Accueil</a>
-            <a data-nav="doctor" href="docteure.html">La docteure</a>
             <a data-nav="consultations" href="consultations.html">Consultations</a>
             <a data-nav="prevention" href="prevention.html">Information</a>
             ${patientNavLink}
@@ -142,7 +141,6 @@
             <div>
               <strong>Navigation</strong>
               <p>
-                <a href="docteure.html">La docteure</a><br>
                 <a href="consultations.html">Consultations</a><br>
                 <a href="prevention.html">Information</a><br>
                 ${patientFooterLink}
