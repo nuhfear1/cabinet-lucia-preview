@@ -129,12 +129,32 @@ test('appointment request sends the exact idempotency key and payload', async ()
   assert.deepEqual(JSON.parse(request.options.body), payload);
 });
 
+test('availability and confirmed booking use the public four-month contract', async () => {
+  const requests = [];
+  const sandbox = runScript('public-api.js', {
+    window: { CABINET_LUCIA_BACKEND: { enabled: true, baseUrl: 'https://backend.example.test', timeoutMs: 1000 } },
+    fetch: async (url, options) => {
+      requests.push({ url, options });
+      return { ok: true, json: async () => ({ ok: true }) };
+    }
+  });
+  await sandbox.window.CabinetLuciaApi.getAvailability('Suivi cardiologique');
+  const payload = { firstName: 'Marie', lastName: 'Durand', phone: '0690000000', email: '', reason: 'Suivi cardiologique', startsAt: '2026-09-21T09:30:00-04:00', consent: true };
+  await sandbox.window.CabinetLuciaApi.bookAppointment(payload, 'booking-key');
+  assert.equal(requests[0].url, 'https://backend.example.test/api/public/availability?reason=Suivi%20cardiologique&months=4');
+  assert.equal(requests[0].options.method, 'GET');
+  assert.equal(requests[1].url, 'https://backend.example.test/api/public/bookings');
+  assert.equal(requests[1].options.headers['Idempotency-Key'], 'booking-key');
+  assert.deepEqual(JSON.parse(requests[1].options.body), payload);
+  assert.equal('location' in payload, false);
+});
+
 test('booking markup matches the final backend contract', () => {
   const html = fs.readFileSync(path.join(root, 'rendez-vous.html'), 'utf8');
-  for (const field of ['firstName', 'lastName', 'phone', 'email', 'date', 'consent']) {
+  for (const field of ['firstName', 'lastName', 'phone', 'email', 'consent']) {
     assert.match(html, new RegExp(`name="${field}"`));
   }
-  assert.match(html, /value="MORNE_A_LEAU" selected/);
+  assert.doesNotMatch(html, /type="date"|name="slot"/);
   assert.doesNotMatch(html, /SAINTE_ROSE|Sainte-Rose/);
   const reasonSelect = html.match(/<select id="reason"[\s\S]*?<\/select>/)?.[0] || '';
   const reasons = [...reasonSelect.matchAll(/<option value="([^"]*)"/g)].map((match) => match[1]);
@@ -150,12 +170,11 @@ test('booking markup matches the final backend contract', () => {
     'Polygraphie nocturne'
   ]);
   assert.doesNotMatch(html, /Examen prescrit/);
-  const slots = [...html.matchAll(/name="slot" value="([0-9:]+)"/g)].map((match) => match[1]);
-  assert.deepEqual(slots, [
-    '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-    '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
-  ]);
-  assert.doesNotMatch(html, /name="slot" value="(?:12:00|12:30|17:00)"/);
+  assert.match(html, /Date de disponibilité/);
+  assert.match(html, /Heure disponible/);
+  assert.match(html, /availability-months/);
+  assert.match(html, /availability-days/);
+  assert.match(html, /availability-times/);
   assert.match(html, /type="checkbox" required/);
   assert.match(html, /name="website"/);
 });
@@ -166,16 +185,22 @@ test('public content exposes the final hero, identity and operational cabinet', 
   const publicHtml = pages.map((file) => fs.readFileSync(path.join(root, file), 'utf8')).join('\n');
   assert.match(fs.readFileSync(path.join(root, 'index.html'), 'utf8'), /<h1>Votre cabinet de CARDIOLOGIE en Guadeloupe\.<\/h1>/);
   assert.doesNotMatch(publicHtml, /Dre Lucia Cespedes-Ocampo/);
+  assert.doesNotMatch(publicHtml, /RPPS\s*(?:&nbsp;)?\s*:/);
+  assert.match(fs.readFileSync(path.join(root, 'site.js'), 'utf8'), /Espace de santé de Perrin[\s\S]*Perrin • Guadeloupe/);
+  assert.match(fs.readFileSync(path.join(root, 'site.js'), 'utf8'), /href="prevention\.html">Information/);
   assert.doesNotMatch(fs.readFileSync(path.join(root, 'rendez-vous.html'), 'utf8'), /Sainte-Rose|SAINTE_ROSE/);
   assert.doesNotMatch(fs.readFileSync(path.join(root, 'cabinets.html'), 'utf8'), /carte-guadeloupe|cabinet-sainte-rose|Sainte-Rose/);
 });
 
 test('appointment success requires the complete canonical response', () => {
   const source = fs.readFileSync(path.join(root, 'booking.js'), 'utf8');
-  assert.match(source, /response\.data\?\.ok !== true/);
-  assert.match(source, /response\.data\.status !== 'RECEIVED'/);
-  assert.match(source, /response\.data\.requestId[^\n]+trim/);
-  assert.match(source, /Votre demande a bien été transmise au cabinet/);
+  assert.match(source, /data\?\.ok !== true/);
+  assert.match(source, /data\.status !== 'CONFIRMED'/);
+  assert.match(source, /!data\.appointmentId \|\| !data\.startsAt/);
+  assert.match(source, /Votre rendez-vous est confirmé/);
+  assert.match(source, /Présentez-vous à l’Espace de santé de Perrin/);
+  assert.match(source, /vous présenter à l’accueil de l’Espace de santé de Perrin/);
+  assert.match(source, /SLOT_UNAVAILABLE[\s\S]*loadAvailability/);
 });
 
 test('booking validates trimmed first and last names against the backend minimum', () => {
@@ -193,14 +218,15 @@ test('booking payload remains the canonical trimmed API contract', () => {
   for (const property of ['firstName', 'lastName', 'phone', 'email']) {
     assert.match(source, new RegExp(`${property}: form\\.${property}\\.value\\.trim\\(\\)`));
   }
-  for (const property of ['reason', 'location', 'preferredAt', 'consent']) {
+  for (const property of ['reason', 'startsAt', 'consent']) {
     assert.match(source, new RegExp(`\\b${property}:`));
   }
+  assert.doesNotMatch(source.match(/const payload = \{[^}]+\}/)?.[0] || '', /location|preferredAt/);
 });
 
 test('patient space exposes only local resources and keeps the portal hidden', () => {
   const html = fs.readFileSync(path.join(root, 'espace-patient.html'), 'utf8');
-  for (const label of ['Préparer ma consultation', 'Comprendre l’ECG', 'Préparer une échographie', 'Suivre ma tension', 'Conseils de prévention', 'Comprendre son traitement', 'Trouver les cabinets', 'Demander un rendez-vous']) assert.match(html, new RegExp(label));
+  for (const label of ['Préparer ma consultation', 'Comprendre l’ECG', 'Préparer une échographie', 'Suivre ma tension', 'Conseils de prévention', 'Comprendre son traitement', 'Trouver les cabinets', 'Prendre rendez-vous']) assert.match(html, new RegExp(label));
   assert.match(html, /id="patient-portal-link" href="" hidden/);
 });
 

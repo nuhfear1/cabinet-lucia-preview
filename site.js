@@ -108,11 +108,11 @@
     headerTarget.innerHTML = `
       <header class="site-header">
         <div class="container nav">
-          <a class="brand" href="index.html" aria-label="Accueil — Cabinet de cardiologie de la Docteure Lucia Cespedes-Ocampo">
+          <a class="brand" href="index.html" aria-label="Accueil — Espace de santé de Perrin">
             <span class="brandmark" aria-hidden="true">♥</span>
             <span>
-              <strong>Lucia Cespedes-Ocampo</strong>
-              <small>Cabinet de cardiologie</small>
+              <strong>Espace de santé de Perrin</strong>
+              <small>Perrin • Guadeloupe</small>
             </span>
           </a>
           <button class="mobile-toggle" type="button" aria-label="Ouvrir le menu" aria-controls="main-navigation" aria-expanded="false">☰</button>
@@ -120,7 +120,7 @@
             <a data-nav="home" href="index.html">Accueil</a>
             <a data-nav="doctor" href="docteure.html">La docteure</a>
             <a data-nav="consultations" href="consultations.html">Consultations</a>
-            <a data-nav="prevention" href="prevention.html">Prévention</a>
+            <a data-nav="prevention" href="prevention.html">Information</a>
             ${patientNavLink}
             <a data-nav="locations" href="cabinets.html">Les cabinets</a>
           </nav>
@@ -136,15 +136,15 @@
         <div class="container">
           <div class="footer-grid">
             <div>
-              <h3>Lucia Cespedes-Ocampo</h3>
-              <p>Cabinet de cardiologie en Guadeloupe. Site en cours de finalisation avant sa mise en ligne définitive.</p>
+              <h3>Espace de santé de Perrin</h3>
+              <p>Un espace de santé situé à Perrin, en Guadeloupe.</p>
             </div>
             <div>
               <strong>Navigation</strong>
               <p>
                 <a href="docteure.html">La docteure</a><br>
                 <a href="consultations.html">Consultations</a><br>
-                <a href="prevention.html">Prévention</a><br>
+                <a href="prevention.html">Information</a><br>
                 ${patientFooterLink}
                 <a href="cabinets.html">Les cabinets</a><br>
                 <a href="rendez-vous.html">Rendez-vous</a>
