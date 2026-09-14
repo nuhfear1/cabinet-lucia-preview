@@ -153,7 +153,7 @@ async function runViewport(client, viewport) {
         getConfig: () => ({ enabled: true, timeoutMs: 1200 }),
         askAssistant: async () => { throw new Error('provider unavailable'); }
       },
-      expected: 'Les adresses et itinéraires sont regroupés sur la page des cabinets.'
+      expected: 'L’adresse et l’itinéraire sont regroupés sur la page du cabinet.'
     });
     assert(providerFallback.expected, 'fallback provider indisponible incorrect');
 
@@ -163,7 +163,7 @@ async function runViewport(client, viewport) {
         getConfig: () => ({ enabled: true, timeoutMs: 1000 }),
         askAssistant: async () => new Promise(() => {})
       },
-      expected: 'Les adresses et itinéraires sont regroupés sur la page des cabinets.',
+      expected: 'L’adresse et l’itinéraire sont regroupés sur la page du cabinet.',
       maxWaitMs: 1800
     });
     assert(timeoutFallback.expected, 'fallback timeout incorrect');
