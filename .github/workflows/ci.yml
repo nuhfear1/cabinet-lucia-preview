@@ -33,9 +33,10 @@ jobs:
             curl -fsS http://127.0.0.1:4173/index.html >/dev/null && break
             sleep 1
           done
-          curl -fsS http://127.0.0.1:4173/rendez-vous.html | grep -q 'Transmettre la demande'
+          curl -fsS http://127.0.0.1:4173/rendez-vous.html | grep -q 'Confirmer le rendez-vous'
           curl -fsS http://127.0.0.1:4173/backend-config.js | grep -q 'CABINET_LUCIA_BACKEND'
-          curl -fsS http://127.0.0.1:4173/public-api.js | grep -q '/api/public/appointment-requests'
+          curl -fsS http://127.0.0.1:4173/public-api.js | grep -q '/api/public/availability'
+          curl -fsS http://127.0.0.1:4173/public-api.js | grep -q '/api/public/bookings'
       - name: Browser availability diagnostics
         run: |
           which google-chrome-stable || true

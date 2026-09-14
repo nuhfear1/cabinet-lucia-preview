@@ -25,3 +25,5 @@
 
 .page-photo.morne-a-leau-photo { aspect-ratio: 16/7; min-height: 0; }
 .page-photo.morne-a-leau-photo img { min-height: 0; }
+
+.availability-months,.availability-days,.availability-times{margin-top:12px}.availability-days{margin-top:20px}.availability-days .slot-choice span{display:grid;gap:4px;text-align:center}.availability-days .slot-choice small{color:var(--muted);font-size:.75rem;text-transform:capitalize}.slot-choice:focus-within{outline:3px solid rgba(40,119,126,.28);outline-offset:2px}@media(max-width:620px){.availability-months,.availability-times{grid-template-columns:repeat(2,minmax(0,1fr))}.availability-days{grid-template-columns:1fr}.slot-choice{min-width:0}}

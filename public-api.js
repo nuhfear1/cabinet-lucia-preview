@@ -59,6 +59,16 @@
     body: JSON.stringify(payload)
   });
 
+  api.getAvailability = async (reason) => request(`/api/public/availability?reason=${encodeURIComponent(reason)}&months=4`, {
+    method: 'GET'
+  });
+
+  api.bookAppointment = async (payload, key) => request('/api/public/bookings', {
+    method: 'POST',
+    headers: { 'Idempotency-Key': key },
+    body: JSON.stringify(payload)
+  });
+
   api.createIdempotencyKey = idempotencyKey;
   api.getConfig = getConfig;
   window.CabinetLuciaApi = Object.freeze(api);
