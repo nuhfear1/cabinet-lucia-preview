@@ -356,15 +356,21 @@ async function checkBooking(client, failures) {
       setValue('[name="reason"]', 'Suivi cardiologique');
       document.querySelector('[data-booking-next]').click();
       const month = await waitFor('[name="availability-month"]');
-      month.checked = true;
-      month.dispatchEvent(new Event('change', { bubbles: true }));
+      month.click();
+      const selectedMonth = document.querySelector('[name="availability-month"]:checked');
+      const monthSelected = selectedMonth?.closest('.slot-choice')?.classList.contains('selected');
       const date = await waitFor('[name="availability-date"]');
-      date.checked = true;
-      date.dispatchEvent(new Event('change', { bubbles: true }));
+      const datesAppeared = Boolean(date);
+      date.click();
+      const selectedDate = document.querySelector('[name="availability-date"]:checked');
+      const dateSelected = selectedDate?.closest('.slot-choice')?.classList.contains('selected');
       const time = await waitFor('[name="availability-time"][value*="09:00"]') || await waitFor('[name="availability-time"]');
-      time.checked = true;
-      time.dispatchEvent(new Event('change', { bubbles: true }));
+      const timesAppeared = Boolean(time);
+      time.click();
+      const selectedTime = document.querySelector('[name="availability-time"]:checked');
+      const timeSelected = selectedTime?.closest('.slot-choice')?.classList.contains('selected');
       document.querySelector('[data-booking-step="2"] [data-booking-next]').click();
+      const step3Reached = !document.querySelector('[data-booking-step="3"]').hidden;
       setValue('[name="firstName"]', ' A ');
       setValue('[name="lastName"]', 'Nom');
       setValue('[name="phone"]', '0690000000');
@@ -400,6 +406,12 @@ async function checkBooking(client, failures) {
         shortFirstNameRejected,
         shortLastNameRejected,
         twoCharacterNamesAccepted,
+        monthSelected,
+        datesAppeared,
+        dateSelected,
+        timesAppeared,
+        timeSelected,
+        step3Reached,
         availabilityRequests,
         bookingRequests
       };
@@ -412,6 +424,12 @@ async function checkBooking(client, failures) {
   assert(result.summaryOk, 'Le récapitulatif du rendez-vous à Perrin est incomplet.', failures);
   assert(result.consentRequired, 'Le consentement n’est pas obligatoire.', failures);
   assert(result.availabilityRequests > 0, 'Les disponibilités ne sont pas chargées.', failures);
+  assert(result.monthSelected, 'Le mois cliqué ne devient pas sélectionné.', failures);
+  assert(result.datesAppeared, 'Les dates du mois sélectionné ne sont pas affichées.', failures);
+  assert(result.dateSelected, 'La date cliquée ne devient pas sélectionnée.', failures);
+  assert(result.timesAppeared, 'Les heures de la date sélectionnée ne sont pas affichées.', failures);
+  assert(result.timeSelected, 'L’heure cliquée ne devient pas sélectionnée.', failures);
+  assert(result.step3Reached, 'Continuer après mois, date et heure ne mène pas à l’étape 3.', failures);
   assert(result.bookingRequests === 1, 'La réservation doit être envoyée exactement une fois.', failures);
   assert(result.resultText.includes('Votre rendez-vous est confirmé.'), 'Le statut CONFIRMED ne produit pas le message attendu.', failures);
   assert(result.resultText.includes('Présentez-vous à l’Espace de santé de Perrin'), 'La confirmation ne précise pas le lieu de présentation.', failures);

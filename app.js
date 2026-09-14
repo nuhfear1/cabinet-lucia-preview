@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const version = '20260907-scroll-stability';
+  const version = '20260914-booking-selection-fix';
   const load = (src) => new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = `${src}?v=${version}`;
