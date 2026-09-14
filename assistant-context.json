@@ -3,18 +3,18 @@
   "source": "public-site",
   "entries": [
     {
-      "id": "appointment-request-process",
+      "id": "appointment-booking-process",
       "page": "rendez-vous.html",
-      "title": "Demande de rendez-vous",
-      "text": "Votre rendez-vous Un parcours clair, étape par étape. Transmettez une demande au cabinet. Le secrétariat confirme ensuite le rendez-vous selon les disponibilités.",
+      "title": "Prise de rendez-vous",
+      "text": "Votre rendez-vous Un parcours clair, étape par étape. Consultez les disponibilités réelles et confirmez votre rendez-vous à Perrin.",
       "url": "rendez-vous.html",
       "type": "appointment"
     },
     {
       "id": "cabinet-morne-a-leau",
       "page": "cabinets.html",
-      "title": "Cabinet de Morne-à-l’Eau",
-      "text": "Cabinet de Morne-à-l’Eau 4127 Route de Abdon Saman – Perrin\n97111 Morne-à-l’Eau Route du nouveau CHU direction Perrin. Deuxième dos d’âne, face à l’épicerie Gamby. Parking Rez-de-villa Accès PMR Ouvrir l’itinéraire",
+      "title": "Perrin",
+      "text": "Perrin 4127 Route de Abdon Saman – Perrin\n97111 Morne-à-l’Eau Route du nouveau CHU direction Perrin. Deuxième dos d’âne, face à l’épicerie Gamby. Parking Rez-de-villa Accès PMR Ouvrir l’itinéraire",
       "url": "cabinets.html",
       "type": "location",
       "links": [
@@ -24,7 +24,7 @@
     {
       "id": "cabinet-overview",
       "page": "cabinets.html",
-      "title": "Le cabinet de Morne-à-l’Eau",
+      "title": "Espace de santé de Perrin",
       "text": "Lieu de consultation Retrouvez facilement le cabinet. Consultez l’adresse et ouvrez directement votre itinéraire.",
       "url": "cabinets.html",
       "type": "location"
@@ -33,7 +33,7 @@
       "id": "doctor-identity",
       "page": "docteure.html",
       "title": "Docteure Lucia Cespedes-Ocampo",
-      "text": "Votre cardiologue Lucia Cespedes-Ocampo Cardiologue en Guadeloupe, Lucia Cespedes-Ocampo reçoit ses patients dans son cabinet de Morne-à-l’Eau. Demander un rendez-vous Voir le cabinet",
+      "text": "Votre cardiologue Lucia Cespedes-Ocampo Cardiologue en Guadeloupe, Lucia Cespedes-Ocampo reçoit ses patients à l’Espace de santé de Perrin. Prendre rendez-vous Voir le cabinet",
       "url": "docteure.html",
       "type": "identity",
       "links": [

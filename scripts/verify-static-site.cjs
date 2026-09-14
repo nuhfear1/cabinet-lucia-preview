@@ -32,7 +32,7 @@ for (const forbidden of ['localhost', 'example', '.invalid']) {
 }
 
 const api = fs.readFileSync(path.join(root, 'public-api.js'), 'utf8');
-for (const endpoint of ['/api/public/config', '/api/public/assistant', '/api/public/appointment-requests']) {
+for (const endpoint of ['/api/public/config', '/api/public/assistant', '/api/public/appointment-requests', '/api/public/availability', '/api/public/bookings']) {
   if (!api.includes(endpoint)) throw new Error(`Endpoint public manquant: ${endpoint}`);
 }
 if (!api.includes("credentials: 'omit'")) throw new Error('Les requêtes publiques ne doivent envoyer aucun cookie privé.');
@@ -41,7 +41,7 @@ if (api.includes("'Cache-Control': 'no-store'")) throw new Error('L’en-tête C
 if (!api.includes("'Idempotency-Key'")) throw new Error('La clé d’idempotence rendez-vous est absente.');
 
 const booking = fs.readFileSync(path.join(root, 'booking.js'), 'utf8');
-for (const field of ['firstName', 'lastName', 'phone', 'email', 'reason', 'location', 'preferredAt', 'consent']) {
+for (const field of ['firstName', 'lastName', 'phone', 'email', 'reason', 'startsAt', 'consent']) {
   if (!booking.includes(field)) throw new Error(`Champ de contrat rendez-vous absent: ${field}`);
 }
 
