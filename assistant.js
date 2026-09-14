@@ -13,7 +13,7 @@
     { test: /(diagnostic|symptome|traitement|medicament|dose|ordonnance.*modifier|resultat|analyse|interpret|mon ecg|mon echo|ma tension)/, text: responses.medical_refusal, status: 'medical_refusal' },
     { test: /(rendez-vous|rdv|reserver|reservation|creneau|disponibilite)/, text: 'Vous pouvez transmettre une demande depuis la page de rendez-vous.', link: ['rendez-vous.html', 'Prendre rendez-vous'] },
     { test: /(espace patient|preparer.*consultation|preparer.*venue|document|apporter)/, text: 'L’espace patient rassemble les informations utiles pour préparer votre consultation.', link: ['espace-patient.html', 'Accéder à l’espace patient'] },
-    { test: /(adresse|cabinet|itineraire|gps|morne|sainte-rose|parking|acces)/, text: 'Les adresses et itinéraires sont regroupés sur la page des cabinets.', link: ['cabinets.html', 'Trouver un cabinet'] },
+    { test: /(adresse|cabinet|itineraire|gps|morne|parking|acces)/, text: 'L’adresse et l’itinéraire sont regroupés sur la page du cabinet.', link: ['cabinets.html', 'Trouver le cabinet'] },
     { test: /(ecg|electrocardiogramme)/, text: 'Une fiche explique comment se déroule un ECG.', link: ['article-ecg.html', 'Comprendre l’ECG'] },
     { test: /(echographie|echo cardiaque)/, text: 'Une fiche explique comment préparer une échographie cardiaque.', link: ['article-echographie.html', 'Préparer une échographie'] },
     { test: /(prevention|tension|conseil|information)/, text: 'Les ressources de prévention sont disponibles sur le site.', link: ['prevention.html', 'Conseils de prévention'] }

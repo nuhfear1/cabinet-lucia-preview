@@ -49,4 +49,4 @@ Après toute modification affectant la connexion publique :
 
 Le portail patient public n’est pas activé : `patientPortalUrl` reste vide tant qu’aucune URL dédiée n’est disponible.
 
-Les éléments encore dépendants de la Dre Lucia Cespedes-Ocampo sont documentés séparément et ne doivent pas être inventés.
+Les informations professionnelles absentes ne doivent pas être inventées.

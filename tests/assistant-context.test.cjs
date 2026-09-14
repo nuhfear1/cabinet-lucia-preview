@@ -19,11 +19,12 @@ test('the public assistant context is reproducibly generated from allowlisted HT
   assert.ok(Buffer.byteLength(first) < 100_000, 'corpus should remain below 100 KB');
 });
 
-test('the corpus includes both confirmed cabinet addresses and routes', () => {
+test('the corpus includes only the confirmed Morne-à-l’Eau cabinet and route', () => {
   const corpus = JSON.parse(fs.readFileSync(contextPath, 'utf8'));
   const text = corpus.entries.map((entry) => entry.text).join('\n');
-  assert.match(text, /Place Tricolore — 88J3\+W89\nAv\. Sainte-Rose de Lima\n97115 Sainte-Rose, Guadeloupe/);
   assert.match(text, /4127 Route de Abdon Saman – Perrin\n97111 Morne-à-l’Eau/);
+  assert.match(text, /Route du nouveau CHU direction Perrin\. Deuxième dos d’âne, face à l’épicerie Gamby\./);
+  assert.doesNotMatch(text, /Sainte-Rose/);
   assert.ok(corpus.entries.some((entry) => entry.links?.some((link) => link.startsWith('https://www.google.com/maps/'))));
 });
 

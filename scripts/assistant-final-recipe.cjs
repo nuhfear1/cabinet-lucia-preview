@@ -119,9 +119,9 @@ async function runViewport(client, viewport) {
     });
 
     const known = await ask({
-      question: 'Où se trouve le cabinet de Sainte-Rose ?',
-      mock: enabled('answer', 'Le cabinet de Sainte-Rose se trouve à **Place Tricolore - 88J3+W89, Av. Sainte-Rose de Lima, 97115 Sainte-Rose, Guadeloupe.**'),
-      expected: 'Place Tricolore - 88J3+W89'
+      question: 'Où se trouve le cabinet de Morne-à-l’Eau ?',
+      mock: enabled('answer', 'Le cabinet se trouve au **4127 Route de Abdon Saman – Perrin, 97111 Morne-à-l’Eau. Route du nouveau CHU direction Perrin. Deuxième dos d’âne, face à l’épicerie Gamby.**'),
+      expected: '4127 Route de Abdon Saman – Perrin'
     });
     assert(known.expected && known.noRawBold, 'réponse connue ou suppression ** incorrecte');
 
@@ -153,7 +153,7 @@ async function runViewport(client, viewport) {
         getConfig: () => ({ enabled: true, timeoutMs: 1200 }),
         askAssistant: async () => { throw new Error('provider unavailable'); }
       },
-      expected: 'Les adresses et itinéraires sont regroupés sur la page des cabinets.'
+      expected: 'L’adresse et l’itinéraire sont regroupés sur la page du cabinet.'
     });
     assert(providerFallback.expected, 'fallback provider indisponible incorrect');
 
@@ -163,7 +163,7 @@ async function runViewport(client, viewport) {
         getConfig: () => ({ enabled: true, timeoutMs: 1000 }),
         askAssistant: async () => new Promise(() => {})
       },
-      expected: 'Les adresses et itinéraires sont regroupés sur la page des cabinets.',
+      expected: 'L’adresse et l’itinéraire sont regroupés sur la page du cabinet.',
       maxWaitMs: 1800
     });
     assert(timeoutFallback.expected, 'fallback timeout incorrect');

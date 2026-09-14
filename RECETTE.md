@@ -24,7 +24,7 @@ Version contrôlée : 2026-08-20
 - Parcours clavier complet : menu, assistant, FAQ et rendez-vous.
 - Contrastes avec axe, WAVE ou Lighthouse si nécessaire.
 - Vérification finale de tous les liens et ressources externes.
-- Vérification des textes, images et informations professionnelles dépendant de la Dre Lucia Cespedes-Ocampo.
+- Vérification des textes, images et informations professionnelles de Lucia Cespedes-Ocampo.
 - Recette réelle du compte DOCTOR après onboarding de Lucia.
 
 Aucune donnée patient réelle ne doit être utilisée pour ces contrôles techniques.
