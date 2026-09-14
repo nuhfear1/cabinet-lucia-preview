@@ -5,7 +5,6 @@ const baseUrl = process.env.PUBLIC_SITE_URL || 'http://127.0.0.1:4173';
 const reportPath = process.env.TECHNICAL_RECIPE_REPORT || '/tmp/public-technical-recipe.json';
 const pages = [
   'index.html',
-  'docteure.html',
   'consultations.html',
   'prevention.html',
   'cabinets.html',
