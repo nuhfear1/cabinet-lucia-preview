@@ -12,6 +12,11 @@
     const monthTarget = document.getElementById('availability-months');
     const dayTarget = document.getElementById('availability-days');
     const timeTarget = document.getElementById('availability-times');
+    const dayHint = form.querySelector('[data-day-hint]');
+    const timeHint = form.querySelector('[data-time-hint]');
+    const selection = document.getElementById('availability-selection');
+    const selectedDateTarget = form.querySelector('[data-selected-date]');
+    const selectedTimeTarget = form.querySelector('[data-selected-time]');
     const result = document.getElementById('booking-result');
     const submitButton = form.querySelector('[type="submit"]');
     const state = { current: 1, loading: false, reason: '', months: [], month: '', date: '', startsAt: '', time: '' };
@@ -61,6 +66,11 @@
       dayTarget.innerHTML = month ? month.days.map((day) => choice(dateLabel(day.date), day.date, 'availability-date', day.date === state.date, `<small>${dateLabel(day.date, true)}</small>`)).join('') : '';
       const day = month?.days.find((item) => item.date === state.date);
       timeTarget.innerHTML = day ? day.slots.map((slot) => choice(slot.time, slot.startsAt, 'availability-time', slot.startsAt === state.startsAt)).join('') : '';
+      if (dayHint) dayHint.hidden = Boolean(state.month);
+      if (timeHint) timeHint.hidden = Boolean(state.date);
+      if (selection) selection.hidden = !(state.date && state.time);
+      if (selectedDateTarget) selectedDateTarget.textContent = state.date ? dateLabel(state.date) : '—';
+      if (selectedTimeTarget) selectedTimeTarget.textContent = state.time || '—';
     };
     const clearAvailability = () => Object.assign(state, { months: [], month: '', date: '', startsAt: '', time: '' });
     const loadAvailability = async (message = '') => {
@@ -97,7 +107,7 @@
       if (state.current === 1) required(form.reason, 'Choisissez un motif de rendez-vous.', validation);
       if (state.current === 2) {
         const dateError = form.querySelector('[data-date-error]'); const timeError = form.querySelector('[data-time-error]');
-        dateError.textContent = state.date ? '' : 'Choisissez une date de disponibilité.';
+        dateError.textContent = state.date ? '' : 'Choisissez une date disponible.';
         timeError.textContent = state.startsAt ? '' : 'Choisissez une heure disponible.';
         if (!state.date || !state.startsAt || state.loading) validation.valid = false;
       }
@@ -118,7 +128,7 @@
       if (event.target === form.reason && state.reason && state.reason !== form.reason.value) { state.reason = ''; clearAvailability(); }
       if (event.target.name === 'availability-month') Object.assign(state, { month: event.target.value, date: '', startsAt: '', time: '' });
       if (event.target.name === 'availability-date') Object.assign(state, { date: event.target.value, startsAt: '', time: '' });
-      if (event.target.name === 'availability-time') { state.startsAt = event.target.value; state.time = event.target.closest('.slot-choice').textContent.trim(); }
+      if (event.target.name === 'availability-time') { state.startsAt = event.target.value; state.time = event.target.closest('.slot-choice')?.textContent.trim() || ''; }
       render();
     });
     form.addEventListener('submit', async (event) => {
